@@ -65,35 +65,43 @@ class _ScriptRegistryEntry:
 	var script_type: Script
 
 	func serialize(value: Variant, next: Callable) -> Variant:
-		var result := {ObjectSerializer.type_field: type}
+		if value.has_method("_serialize"):
+			var result = value._serialize(next)
+			result[ObjectSerializer.type_field] = type
+			return result
+		else:
+			var result := {ObjectSerializer.type_field: type}
 
-		for property: Dictionary in value.get_property_list():
-			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-				result[property.name] = next.call(value.get(property.name))
+			for property: Dictionary in value.get_property_list():
+				if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+					result[property.name] = next.call(value.get(property.name))
 
-		if value.has_method("_get_constructor_args"):
-			var args: Array = value._get_constructor_args()
-			result[ObjectSerializer.args_field] = args
+			if value.has_method("_get_constructor_args"):
+				var args: Array = value._get_constructor_args()
+				result[ObjectSerializer.args_field] = args
 
-		return result
+			return result
 
 	func deserialize(value: Variant, next: Callable) -> Variant:
-		var instance: Variant
-		if value.has(ObjectSerializer.args_field):
-			instance = script_type.new.callv(value[ObjectSerializer.args_field])
+		if script_type.has_method("_deserialize"):
+			return script_type._deserialize(value, next)
 		else:
-			instance = script_type.new()
+			var instance: Variant
+			if value.has(ObjectSerializer.args_field):
+				instance = script_type.new.callv(value[ObjectSerializer.args_field])
+			else:
+				instance = script_type.new()
 
-		for key: String in value:
-			if key == ObjectSerializer.type_field || key == ObjectSerializer.args_field:
-				continue
-			var key_value: Variant = next.call(value[key])
-			match typeof(key_value):
-				TYPE_DICTIONARY:
-					instance[key].assign(key_value)
-				TYPE_ARRAY:
-					instance[key].assign(key_value)
-				_:
-					instance[key] = key_value
+			for key: String in value:
+				if key == ObjectSerializer.type_field || key == ObjectSerializer.args_field:
+					continue
+				var key_value: Variant = next.call(value[key])
+				match typeof(key_value):
+					TYPE_DICTIONARY:
+						instance[key].assign(key_value)
+					TYPE_ARRAY:
+						instance[key].assign(key_value)
+					_:
+						instance[key] = key_value
 
-		return instance
+			return instance

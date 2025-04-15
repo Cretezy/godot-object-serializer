@@ -21,7 +21,7 @@ func _init() -> void:
 
 	# Serialize
 	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
-	print(JSON.stringify(serialized, "  "))
+	print(JSON.stringify(serialized, "\t"))
 
 	# Verify after JSON serialization
 	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(

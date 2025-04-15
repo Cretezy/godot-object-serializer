@@ -36,16 +36,14 @@ class Data:
 	# Supports nested data, either as a field or in array/dictionary
 	var nested: DataResource
 
-
 class DataResource:
 	extends Resource
 	var name: String
 
-
 enum State { OPENED, CLOSED }
 
-var data := Data.new()
 
+var data := Data.new()
 
 func _init() -> void:
 	# Required: Register possible object scripts
@@ -272,7 +270,7 @@ During serialization, all fields are serialized. This can be overriden by overri
 
 During deserialization, all fields are set back on the object.
 
-If your object has a constructor, you must implement `_get_constructor_args(): Array` to return the arguments for your constructor:
+If your class has a constructor, you must implement `_get_constructor_args(): Array` to return the arguments for your constructor:
 
 ```gdscript
 class Data:
@@ -283,6 +281,51 @@ class Data:
 	func _get_constructor_args() -> Array:
 		return [name]
 ```
+
+### Custom Object Serializer
+
+Classes can implement `_serializer(serialize: Callable) -> Dictionary` and `static _deserialize(data: Dictionary, deserialize: Callable) -> Variant` to customize the serialization.
+
+Note that the type field will automatically be added after running your custom serializer, and the field will be present in the deserializer's `data`. Having a custom serializer/deserializer skips constructor handling.
+
+To serialize/deserialize nested data, use the `serialize`/`deserialize` Callables provided to your method. This is only required for non-primitives.
+
+```gdscript
+class Data:
+	# No need to call `serialize`/`deserialize` for primitive
+	var name: String
+	# Must call `serialize`/`deserialize` for non-primitive
+	var position: Vector2
+
+	func _serialize(next: Callable) -> Dictionary:
+		return {
+			"key": name,
+			"pos": next.call(position)
+		}
+
+	static func _deserialize(data: Dictionary, next: Callable) -> Data:
+		var instance = Data.new()
+		instance.name = data["key"]
+		instance.position = next.call(data["pos"])
+		return instance
+```
+
+<details>
+<summary>Example output</summary>
+```json
+{
+  "._type": "Object_Data",
+  "key": "hello world",
+  "pos": {
+    "._type": "Vector2",
+    "._": [
+      1.0,
+      2.0
+    ]
+  }
+}
+```
+</details>
 
 ## API
 
