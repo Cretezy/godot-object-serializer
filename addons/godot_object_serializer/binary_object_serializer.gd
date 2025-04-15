@@ -3,8 +3,8 @@
 class_name BinaryObjectSerializer
 
 
-## Serialize [data] into dictionary which can be passed to [var_to_bytes].
-static func serialize(value: Variant) -> Variant:
+## Serialize [data] to value which can be passed to [var_to_bytes].
+static func serialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
 			var name: StringName = value.get_script().get_global_name()
@@ -18,20 +18,25 @@ static func serialize(value: Variant) -> Variant:
 					)
 				)
 
-			return object_entry.serialize(value, serialize)
+			return object_entry.serialize(value, serialize_var)
 		TYPE_ARRAY:
-			return value.map(serialize)
+			return value.map(serialize_var)
 		TYPE_DICTIONARY:
 			var result := {}
 			for i: Variant in value:
-				result[i] = serialize(value[i])
+				result[i] = serialize_var(value[i])
 			return result
 
 	return value
 
 
-## Deserialize dictionary [data] from [bytes_to_var] into objects.
-static func deserialize(value: Variant) -> Variant:
+## Serialize [data] into bytes with [serialize_var] and [var_to_bytes].
+static func serialize_bytes(value: Variant) -> PackedByteArray:
+	return var_to_bytes(serialize_var(value))
+
+
+## Deserialize [data] from [bytes_to_var] to value.
+static func deserialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_DICTIONARY:
 			if value.has(ObjectSerializer.type_field):
@@ -41,13 +46,18 @@ static func deserialize(value: Variant) -> Variant:
 					if !entry:
 						assert(false, "Could not find type (%s) in registry" % type)
 
-					return entry.deserialize(value, deserialize)
+					return entry.deserialize_var(value, deserialize_var)
 
 			var result := {}
 			for i: Variant in value:
-				result[i] = deserialize(value[i])
+				result[i] = deserialize_var(value[i])
 			return result
 		TYPE_ARRAY:
-			return value.map(deserialize)
+			return value.map(deserialize_var)
 
 	return value
+
+
+## Deserialize bytes [data] to value with [bytes_to_var] and [deserialize_var].
+static func deserialize_bytes(value: PackedByteArray) -> Variant:
+	return deserialize_var(bytes_to_var(value))

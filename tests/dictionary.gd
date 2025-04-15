@@ -47,18 +47,19 @@ class Data:
 
 
 func _build_data(string: String) -> Data:
-	var data := Data.new()
-	data.string = string
-	return data
+	var new_data := Data.new()
+	new_data.string = string
+	return new_data
 
 
 # Tests
+var data := Data.new()
+
 func _init() -> void:
 	# Register objects
 	ObjectSerializer.register_script("Data", Data)
 
 	# Build test data
-	var data := Data.new()
 	data.nested = _build_data("nested")
 	data.array_variant = [1.0, "a", Vector2(1, 2)]
 	data.array_typed = [1, 2]
@@ -106,14 +107,19 @@ func _init() -> void:
 	)
 
 	# Serialize
-	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
-	print(JSON.stringify(serialized, "  "))
+	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
+	var json = JSON.stringify(serialized, "\t")
+	# print(json)
+	# assert(json == ObjectSerializer.dictionary.serialize_json(data, "\t"))
 
 	# Verify after JSON serialization
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize(
-		JSON.parse_string(JSON.stringify(serialized))
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(
+		JSON.parse_string(json)
 	)
+	_assert_data(deserialized)
+	_assert_data(ObjectSerializer.dictionary.deserialize_json(json))
 
+func _assert_data(deserialized: Data) -> void:
 	assert(data.nested.string == deserialized.nested.string, "nested different")
 	assert(data.array_variant == deserialized.array_variant, "array_variant different")
 	assert(data.array_typed == deserialized.array_typed, "array_typed different")

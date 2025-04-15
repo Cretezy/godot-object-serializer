@@ -106,11 +106,11 @@ func _init() -> void:
 	)
 
 	# Serialize
-	var serialized: Variant = ObjectSerializer.binary.serialize(data)
+	var serialized: Variant = ObjectSerializer.binary.serialize_var(data)
 	print(JSON.stringify(serialized, "  "))
 
 	# Verify after binary serialization
-	var deserialized: Data = ObjectSerializer.binary.deserialize(
+	var deserialized: Data = ObjectSerializer.binary.deserialize_var(
 		bytes_to_var(var_to_bytes(serialized))
 	)
 

@@ -36,14 +36,16 @@ class Data:
 	# Supports nested data, either as a field or in array/dictionary
 	var nested: DataResource
 
+
 class DataResource:
 	extends Resource
 	var name: String
 
+
 enum State { OPENED, CLOSED }
 
-
 var data := Data.new()
+
 
 func _init() -> void:
 	# Required: Register possible object scripts
@@ -66,7 +68,8 @@ func _init() -> void:
 
 func json_serialization() -> void:
 	# Serialize to JSON
-	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
+	# Alternative: ObjectSerializer.dictionary.serialize_json(data)
+	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
 	var json := JSON.stringify(serialized, "\t")
 	print(json)
 	""" Output:
@@ -76,9 +79,9 @@ func json_serialization() -> void:
 		"vector": {
 			"._type": "Vector3",
 			"._": [
-				1.0,
-				2.0,
-				3.0
+					1.0,
+					2.0,
+					3.0
 			]
 		},
 		"enum_state": 1,
@@ -88,11 +91,11 @@ func json_serialization() -> void:
 		],
 		"dictionary": {
 			"position": {
-				"._type": "Vector2",
-				"._": [
-					1.0,
-					2.0
-				]
+					"._type": "Vector2",
+					"._": [
+									1.0,
+									2.0
+					]
 			}
 		},
 		"packed_byte_array": {
@@ -107,22 +110,26 @@ func json_serialization() -> void:
 	"""
 
 	# Verify after JSON deserialization
+	# Alternative: ObjectSerializer.dictionary.deserialize_json(json)
 	var parsed_json = JSON.parse_string(json)
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize(parsed_json)
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(parsed_json)
 	_assert_data(deserialized)
 
 
 func binary_serialization() -> void:
 	# Serialize to bytes
-	var serialized: Variant = ObjectSerializer.binary.serialize(data)
+	# Alternative: ObjectSerializer.binary.serialize_bytes(data)
+	var serialized: Variant = ObjectSerializer.binary.serialize_var(data)
 	var bytes := var_to_bytes(serialized)
 	print(bytes)
 	# Output: List of bytes
 
-	# Verify after bytes deserialization
+	# Verify after bytes deserialization.
+	# Alternative: ObjectSerializer.binary.deserialize_bytes(bytes)
 	var parsed_bytes = bytes_to_var(bytes)
-	var deserialized: Data = ObjectSerializer.binary.deserialize(parsed_bytes)
+	var deserialized: Data = ObjectSerializer.binary.deserialize_var(parsed_bytes)
 	_assert_data(deserialized)
+
 
 func _assert_data(deserialized: Data) -> void:
 	assert(data.string == deserialized.string, "string is different")
@@ -130,7 +137,9 @@ func _assert_data(deserialized: Data) -> void:
 	assert(data.enum_state == deserialized.enum_state, "enum_state is different")
 	assert(data.array == deserialized.array, "array is different")
 	assert(data.dictionary == deserialized.dictionary, "dictionary is different")
-	assert(data.packed_byte_array == deserialized.packed_byte_array, "packed_byte_array is different")
+	assert(
+		data.packed_byte_array == deserialized.packed_byte_array, "packed_byte_array is different"
+	)
 	assert(data.nested.name == deserialized.nested.name, "nested.name is different")
 ```
 
@@ -283,21 +292,37 @@ Registers a script (a object type) to be serialized/deserialized. All custom typ
 
 Name can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 
-### `ObjectSerializer.dictionary.serialize(data: Variant) -> Variant`
+### `ObjectSerializer.dictionary.serialize_var(data: Variant) -> Variant`
 
-Serialize `data` into dictionary which can be passed to `JSON.stringify`.
+Serialize `data` into value which can be passed to `JSON.stringify`.
 
-### `ObjectSerializer.dictionary.deserialize(data: Variant) -> Variant`
+### `ObjectSerializer.dictionary.serialize_json(value: Variant, indent := "", sort_keys := true, full_precision := false) -> Variant`
 
-Deserialize dictionary `data` from `JSON.parse_string` into objects.
+Serialize `data` into JSON string with `ObjectSerializer.dictionary.serialize_var` and `JSON.stringify`. Supports same arguments as `JSON.stringify`
 
-### `ObjectSerializer.binary.serialize(data: Variant) -> Variant`
+### `ObjectSerializer.dictionary.deserialize_var(data: Variant) -> Variant`
 
-Serialize `data` into dictionary which can be passed to `var_to_bytes`.
+Deserialize `data` from `JSON.parse_string` into value.
 
-### `ObjectSerializer.binary.deserialize(data: Variant) -> Variant`
+### `ObjectSerializer.dictionary.deserialize_json(data: String) -> Variant`
 
-Deserialize dictionary `data` from `bytes_to_var` into objects.
+Deserialize JSON string `data` to value with `JSON.parse_string` and `ObjectSerializer.dictionary.deserialize_var`.
+
+### `ObjectSerializer.binary.serialize_var(data: Variant) -> Variant`
+
+Serialize `data` to value which can be passed to `var_to_bytes`.
+
+### `ObjectSerializer.binary.serialize_bytes(data: Variant) -> PackedByteArray`
+
+Serialize `data` into bytes with `ObjectSerializer.binary.serialize_var` and `var_to_bytes`.
+
+### `ObjectSerializer.binary.deserialize_var(data: Variant) -> Variant`
+
+Deserialize `data` from `bytes_to_var` to value.
+
+### `ObjectSerializer.binary.deserialize_bytes(data: PackedByteArray) -> Variant`
+
+Deserialize bytes `data` to value with `bytes_to_var` and `ObjectSerializer.binary.deserialize_var`.
 
 ### Settings
 
@@ -360,10 +385,8 @@ data.dictionary_typed.value = 1
 
 
 # Serialize/deserialize through JSON
-data = ObjectSerializer.dictionary.deserialize(
-	JSON.parse_string(JSON.stringify(
-		ObjectSerializer.dictionary.serialize(data)
-	))
+data = ObjectSerializer.dictionary.deserialize_json(
+	ObjectSerializer.dictionary.serialize_json(data)
 )
 
 

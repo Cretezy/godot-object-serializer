@@ -20,11 +20,11 @@ func _init() -> void:
 	var data := Data.new("a")
 
 	# Serialize
-	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
+	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
 	print(JSON.stringify(serialized, "  "))
 
 	# Verify after JSON serialization
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize(
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(
 		JSON.parse_string(JSON.stringify(serialized))
 	)
 

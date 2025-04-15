@@ -50,7 +50,8 @@ func _init() -> void:
 
 func json_serialization() -> void:
 	# Serialize to JSON
-	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
+	# Alternative: ObjectSerializer.dictionary.serialize_json(data)
+	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
 	var json := JSON.stringify(serialized, "\t")
 	print(json)
 	""" Output:
@@ -91,21 +92,24 @@ func json_serialization() -> void:
 	"""
 
 	# Verify after JSON deserialization
+	# Alternative: ObjectSerializer.dictionary.deserialize_json(json)
 	var parsed_json = JSON.parse_string(json)
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize(parsed_json)
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(parsed_json)
 	_assert_data(deserialized)
 
 
 func binary_serialization() -> void:
 	# Serialize to bytes
-	var serialized: Variant = ObjectSerializer.binary.serialize(data)
+	# Alternative: ObjectSerializer.binary.serialize_bytes(data)
+	var serialized: Variant = ObjectSerializer.binary.serialize_var(data)
 	var bytes := var_to_bytes(serialized)
 	print(bytes)
 	# Output: List of bytes
 
-	# Verify after bytes deserialization
+	# Verify after bytes deserialization.
+	# Alternative: ObjectSerializer.binary.deserialize_bytes(bytes)
 	var parsed_bytes = bytes_to_var(bytes)
-	var deserialized: Data = ObjectSerializer.binary.deserialize(parsed_bytes)
+	var deserialized: Data = ObjectSerializer.binary.deserialize_var(parsed_bytes)
 	_assert_data(deserialized)
 
 

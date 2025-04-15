@@ -1,8 +1,8 @@
 ## Main godot-object-serializer class.
 class_name ObjectSerializer
 
-# TODO: Replace with UID
 # Sub-serializers
+# TODO: Eventually replace with UID (breaks with Godot <4.4)
 const dictionary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
 const binary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
 
@@ -19,7 +19,8 @@ static var args_field := "._"
 ## Can be changed but must be done before any serialization/deserizalization.
 static var object_type_prefix := "Object_"
 
-static var _script_registry: Dictionary[String, ScriptRegistryEntry]
+## Registry of object types
+static var _script_registry: Dictionary[String, _ScriptRegistryEntry]
 
 
 ## Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
@@ -27,7 +28,7 @@ static var _script_registry: Dictionary[String, ScriptRegistryEntry]
 static func register_script(name: StringName, script: Script) -> void:
 	var script_name := _get_script_name(script, name)
 	assert(script_name, "Script must have name\n" + script.source_code)
-	var entry := ScriptRegistryEntry.new()
+	var entry := _ScriptRegistryEntry.new()
 	entry.script_type = script
 	entry.type = object_type_prefix + script_name
 	_script_registry[entry.type] = entry
@@ -43,15 +44,15 @@ static func _get_script_name(script: Script, name: StringName = "") -> StringNam
 	return ""
 
 
-static func _get_entry(name: StringName = "", script: Script = null) -> ScriptRegistryEntry:
+static func _get_entry(name: StringName = "", script: Script = null) -> _ScriptRegistryEntry:
 	if name:
-		var entry: ScriptRegistryEntry = _script_registry.get(name)
+		var entry: _ScriptRegistryEntry = _script_registry.get(name)
 		if entry:
 			return entry
 
 	if script:
 		for i: String in _script_registry:
-			var entry: ScriptRegistryEntry = _script_registry.get(i)
+			var entry: _ScriptRegistryEntry = _script_registry.get(i)
 			if entry:
 				if script == entry.script_type:
 					return entry
@@ -59,7 +60,7 @@ static func _get_entry(name: StringName = "", script: Script = null) -> ScriptRe
 	return null
 
 
-class ScriptRegistryEntry:
+class _ScriptRegistryEntry:
 	var type: String
 	var script_type: Script
 
@@ -68,6 +69,8 @@ class ScriptRegistryEntry:
 
 		for property: Dictionary in value.get_property_list():
 			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+				print(property.name)
+				print(value.get(property.name))
 				result[property.name] = next.call(value.get(property.name))
 
 		if value.has_method("_get_constructor_args"):

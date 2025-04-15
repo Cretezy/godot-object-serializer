@@ -2,6 +2,7 @@
 ## This serializes objects and built-in Godot types.
 class_name DictionaryObjectSerializer
 
+
 ## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8)
 ## It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
 ## Can be changed but must be done before any serialization/deserizalization.
@@ -11,14 +12,15 @@ static var bytes_as_base64 := true
 ## Can be changed but must be done before any serialization/deserizalization.
 static var bytes_to_base64_type = "PackedByteArray_Base64"
 
+
 # Types that can natively be represented in JSON
 const _JSON_SERIALIZABLE_TYPES = [
 	TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME
 ]
 
 
-## Serialize [data] into dictionary which can be passed to [JSON.stringify].
-static func serialize(value: Variant) -> Variant:
+## Serialize [data] into value which can be passed to [JSON.stringify].
+static func serialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
 			var name: StringName = value.get_script().get_global_name()
@@ -32,19 +34,20 @@ static func serialize(value: Variant) -> Variant:
 					)
 				)
 
-			return object_entry.serialize(value, serialize)
+			return object_entry.serialize(value, serialize_var)
 
 		TYPE_ARRAY:
-			return value.map(serialize)
+			return value.map(serialize_var)
 
 		TYPE_DICTIONARY:
 			var result := {}
 			for i: Variant in value:
-				result[i] = serialize(value[i])
+				result[i] = serialize_var(value[i])
 			return result
 
 		TYPE_PACKED_BYTE_ARRAY:
 			if bytes_as_base64:
+				print("a %s" % value)
 				return {
 					ObjectSerializer.type_field: bytes_to_base64_type,
 					ObjectSerializer.args_field: Marshalls.raw_to_base64(value)
@@ -59,8 +62,18 @@ static func serialize(value: Variant) -> Variant:
 	}
 
 
-## Deserialize dictionary [data] from [JSON.parse_string] into objects.
-static func deserialize(value: Variant) -> Variant:
+## Serialize [data] into JSON string with [serialize_var] and [JSON.stringify]. Supports same arguments as [JSON.stringify]
+static func serialize_json(
+	value: Variant, indent := "", sort_keys := true, full_precision := false
+) -> String:
+	DictionaryObjectSerializer.serialize_var(value)
+	print("huh")
+	print(value)
+	return JSON.stringify(serialize_var(value), indent, sort_keys, full_precision)
+
+
+## Deserialize [data] from [JSON.parse_string] into value.
+static func deserialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_DICTIONARY:
 			if value.has(ObjectSerializer.type_field):
@@ -73,16 +86,21 @@ static func deserialize(value: Variant) -> Variant:
 					if !entry:
 						assert(false, "Could not find type (%s) in registry" % type)
 
-					return entry.deserialize(value, deserialize)
+					return entry.deserialize(value, deserialize_var)
 
 				return JSON.to_native({"type": type, "args": value[ObjectSerializer.args_field]})
 
 			var result := {}
 			for i: Variant in value:
-				result[i] = deserialize(value[i])
+				result[i] = deserialize_var(value[i])
 			return result
 
 		TYPE_ARRAY:
-			return value.map(deserialize)
+			return value.map(deserialize_var)
 
 	return value
+
+
+## Deserialize JSON string [data] to value with [JSON.parse_string] and [deserialize_var].
+static func deserialize_json(value: String) -> Variant:
+	return deserialize_var(JSON.parse_string(value))
