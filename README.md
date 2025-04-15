@@ -7,8 +7,8 @@ Features:
 - **Safety**: No remote code execution, can be used for untrusted data.
 - **Dictionary/binary mode**: Dictionary mode can be used with `JSON.stringify`/`JSON.parse_string`, while binary mode can be used with `var_to_bytes`/`bytes_to_var`.
 - **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors.
-- **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc)
-- **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray` is efficiently serialized as base64 (instead of array of uint8).
+- **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc) are supported
+- **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray`s are efficiently serialized as base64 (instead of array of uint8).
 
 > Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
 
@@ -79,9 +79,9 @@ func json_serialization() -> void:
 		"vector": {
 			"._type": "Vector3",
 			"._": [
-					1.0,
-					2.0,
-					3.0
+				1.0,
+				2.0,
+				3.0
 			]
 		},
 		"enum_state": 1,
@@ -91,11 +91,11 @@ func json_serialization() -> void:
 		],
 		"dictionary": {
 			"position": {
-					"._type": "Vector2",
-					"._": [
-									1.0,
-									2.0
-					]
+				"._type": "Vector2",
+				"._": [
+					1.0,
+					2.0
+				]
 			}
 		},
 		"packed_byte_array": {
