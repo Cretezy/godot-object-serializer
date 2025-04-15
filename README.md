@@ -175,7 +175,7 @@ Godot has a built-in way to serialize more types such as Vector2, Vector3, Trans
 
 By default, this does not support serializing objects, unless `full_objects` is true (second argument in `JSON.from_native(object, true)`). **This is unsafe** (can cause remote code execution) and `full_objects` should never be used with untrusted data.
 
-Additionally, using `from_native` combined with `to_dict` above produced inefficient packing (see example).
+Additionally, using `JSON.from_native` combined with a `to_dict` produced inefficient packing (see example).
 
 <details>
 <summary>Example</summary>
@@ -228,6 +228,8 @@ Godot has a built-in way to serialize more types such as Vector2, Vector3, Trans
 
 By default, this does not support serializing objects, unless `var_to_bytes_with_objects`/`bytes_to_var_with_objects` is used. **This is unsafe** (can cause remote code execution) and `*_with_objects` should never be used with untrusted data.
 
+Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (same as `JSON.from_native`).
+
 ## How does it work?
 
 TODO
@@ -236,7 +238,7 @@ TODO
 
 ### `ObjectSerializer.register_script(name: StringName, script: Script) -> void`
 
-Registers a script (a object type) to be serialized/deserialized.
+Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
 
 ### `ObjectSerializer.dictionary.serialize(data: Variant) -> Variant`
 
