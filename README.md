@@ -143,7 +143,10 @@ There's multiple ways to serialize data in Godot, with only some of them safe (s
 
 JSON serialization works great for data that can be represented as JSON (string, numbers, arrays, dictionary, booleans, null). This means that objects or other built-in types (e.g. Vector2) cannot be represented.
 
-To use `JSON.stringify`, the traditional way is to manually serialize to a JSON-representable data before serialization:
+To use `JSON.stringify`, the traditional way is to manually serialize to a JSON-representable data before serialization (see example).
+
+<details>
+<summary>Example</summary>
 
 ```gdscript
 class JsonData:
@@ -162,6 +165,8 @@ class JsonData:
     return result
 ```
 
+</details>
+
 This is very flexible but very tedious as every object type must be manually serialized.
 
 ### `JSON.from_native`
@@ -169,6 +174,53 @@ This is very flexible but very tedious as every object type must be manually ser
 Godot has a built-in way to serialize more types such as Vector2, Vector3, Transform3D, etc, to a JSON represenation.
 
 By default, this does not support serializing objects, unless `full_objects` is true (second argument in `JSON.from_native(object, true)`). **This is unsafe** (can cause remote code execution) and `full_objects` should never be used with untrusted data.
+
+Additionally, using `from_native` combined with `to_dict` above produced inefficient packing (see example).
+
+<details>
+<summary>Example</summary>
+
+```gdscript
+class JsonNativeData:
+	var string: String
+	var vector2: Vector2
+
+	func to_dict() -> Dictionary:
+		return {
+			"string": string,
+			"vector2": vector2
+		}
+	static func from_dict(data: Dictionary) -> JsonNativeData:
+		var result := JsonNativeData.new()
+		result.string = data["string"]
+		result.vector2 = data["vector2"]
+		return result
+
+func _init():
+	var data = JsonNativeData.new()
+	data.string = "hello world"
+	data.vector2 = Vector2(1, 2)
+	print(JSON.stringify(JSON.from_native(data.to_dict()), "\t"))
+	""" Output:
+  {
+    "type": "Dictionary",
+    "args": [
+      "s:string",
+      "s:hello world",
+      "s:vector2",
+      {
+        "type": "Vector2",
+        "args": [
+          1.0,
+          2.0
+        ],
+      }
+    ]
+  }
+	"""
+```
+
+</details>
 
 ### `var_to_bytes` / `bytes_to_var`
 
