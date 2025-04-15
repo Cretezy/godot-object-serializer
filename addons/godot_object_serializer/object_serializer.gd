@@ -4,7 +4,7 @@ class_name ObjectSerializer
 # Sub-serializers
 # TODO: Eventually replace with UID (breaks with Godot <4.4)
 const dictionary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
-const binary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
+const binary = preload("res://addons/godot_object_serializer/binary_object_serializer.gd")
 
 ## The field containing the type in serialized object values. Not recommended to change.
 ## This should be set to something unlikely to clash with keys in objects/dictionaries.
@@ -69,8 +69,6 @@ class _ScriptRegistryEntry:
 
 		for property: Dictionary in value.get_property_list():
 			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-				print(property.name)
-				print(value.get(property.name))
 				result[property.name] = next.call(value.get(property.name))
 
 		if value.has_method("_get_constructor_args"):

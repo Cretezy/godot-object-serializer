@@ -55,6 +55,7 @@ func _build_data(string: String) -> Data:
 # Tests
 var data := Data.new()
 
+
 func _init() -> void:
 	# Register objects
 	ObjectSerializer.register_script("Data", Data)
@@ -109,15 +110,14 @@ func _init() -> void:
 	# Serialize
 	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
 	var json = JSON.stringify(serialized, "\t")
-	# print(json)
-	# assert(json == ObjectSerializer.dictionary.serialize_json(data, "\t"))
+	print(json)
+	assert(json == ObjectSerializer.dictionary.serialize_json(data, "\t"))
 
 	# Verify after JSON serialization
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(
-		JSON.parse_string(json)
-	)
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(JSON.parse_string(json))
 	_assert_data(deserialized)
 	_assert_data(ObjectSerializer.dictionary.deserialize_json(json))
+
 
 func _assert_data(deserialized: Data) -> void:
 	assert(data.nested.string == deserialized.nested.string, "nested different")

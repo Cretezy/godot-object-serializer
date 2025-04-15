@@ -2,7 +2,6 @@
 ## This serializes objects and built-in Godot types.
 class_name DictionaryObjectSerializer
 
-
 ## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8)
 ## It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
 ## Can be changed but must be done before any serialization/deserizalization.
@@ -11,7 +10,6 @@ static var bytes_as_base64 := true
 ## This should be set to something unlikely to clash with built-in type names or [ObjectSerializer.object_type_prefix].
 ## Can be changed but must be done before any serialization/deserizalization.
 static var bytes_to_base64_type = "PackedByteArray_Base64"
-
 
 # Types that can natively be represented in JSON
 const _JSON_SERIALIZABLE_TYPES = [
@@ -47,10 +45,10 @@ static func serialize_var(value: Variant) -> Variant:
 
 		TYPE_PACKED_BYTE_ARRAY:
 			if bytes_as_base64:
-				print("a %s" % value)
 				return {
 					ObjectSerializer.type_field: bytes_to_base64_type,
-					ObjectSerializer.args_field: Marshalls.raw_to_base64(value)
+					ObjectSerializer.args_field:
+					Marshalls.raw_to_base64(value) if !value.is_empty() else ""
 				}
 
 	if _JSON_SERIALIZABLE_TYPES.has(typeof(value)):
@@ -66,9 +64,6 @@ static func serialize_var(value: Variant) -> Variant:
 static func serialize_json(
 	value: Variant, indent := "", sort_keys := true, full_precision := false
 ) -> String:
-	DictionaryObjectSerializer.serialize_var(value)
-	print("huh")
-	print(value)
 	return JSON.stringify(serialize_var(value), indent, sort_keys, full_precision)
 
 
