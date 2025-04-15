@@ -2,12 +2,14 @@
 
 **Safely** serialize objects (and built-in Godot types) to dictionaries for JSON and binary serialization.
 
+Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects` which allow for code execution), but this library can!
+
 Features:
 
 - **Safety**: No remote code execution, can be used for untrusted data.
 - **Dictionary/binary mode**: Dictionary mode can be used for JSON serialization (`JSON.stringify`/`JSON.parse_string`), while binary mode can be used with binary serialization (`var_to_bytes`/`bytes_to_var`). Provides helpers to serialize directly to JSON/binary.
 - **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors and custom serializer/deserializer.
-- **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc) are supported
+- **Built-in types**: All built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Color, Packed\*Array, etc etc) are supported.
 - **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray`s are efficiently serialized as base64 (instead of array of uint8).
 
 > Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
@@ -400,6 +402,12 @@ Can be changed but must be done before any serialization/deserizalization.
 The type of the object for PackedByteArray when `ObjectSerializer.dictionary.bytes_as_base64` is enabled.
 This should be set to something unlikely to clash with built-in type names or `ObjectSerializer.object_type_prefix`.
 Can be changed but must be done before any serialization/deserizalization.
+
+### Unsupported Types
+
+- Classes/scripts that are not registered with `ObjectSerializer.register_script`
+- Callable
+- Signal
 
 ## Edge Cases
 
