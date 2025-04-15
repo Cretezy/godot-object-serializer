@@ -1,7 +1,6 @@
 extends SceneTree
 
-		
-# Example
+
 class Data:
 	# Custom handling
 	var nested: Data
@@ -13,6 +12,8 @@ class Data:
 	var dictionary_nested: Dictionary[String, Data]
 	# JSON types
 	var string: String
+	var string_name: StringName
+	@export var exported: String
 	var boolean: bool
 	var integer: int
 	var floating_point: float
@@ -44,6 +45,7 @@ class Data:
 	var packed_vector4_array: PackedVector4Array
 	var packed_color_array: PackedColorArray
 
+
 func _build_data(string: String) -> Data:
 	var data := Data.new()
 	data.string = string
@@ -58,13 +60,15 @@ func _init() -> void:
 	# Build test data
 	var data := Data.new()
 	data.nested = _build_data("nested")
-	data.array_variant = [1.0, "a", Vector2(1,2)]
+	data.array_variant = [1.0, "a", Vector2(1, 2)]
 	data.array_typed = [1, 2]
 	data.array_nested = [_build_data("array nested")]
-	data.dictionary_variant = { "float": 1.0, "vector": Vector2(1, 2) }
-	data.dictionary_typed = { "int": 1 }
-	data.dictionary_nested = { "data": _build_data("dictionary nested") }
+	data.dictionary_variant = {"float": 1.0, "vector": Vector2(1, 2)}
+	data.dictionary_typed = {"int": 1}
+	data.dictionary_nested = {"data": _build_data("dictionary nested")}
 	data.string = "a"
+	data.string_name = "b"
+	data.exported = "c"
 	data.boolean = true
 	data.integer = 1
 	data.floating_point = 2.3
@@ -77,12 +81,16 @@ func _init() -> void:
 	data.rect2 = Rect2(1.2, 3.4, 5.6, 7.8)
 	data.rect2i = Rect2(1, 2, 3, 4)
 	data.transform2d = Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6))
-	data.transform3d = Transform3D(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9), Vector3(10, 11, 12))
+	data.transform3d = Transform3D(
+		Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9), Vector3(10, 11, 12)
+	)
 	data.basis = Basis(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9))
 	data.plane = Plane(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9))
 	data.quaternion = Quaternion(Vector3(1, 2, 3).normalized(), 2)
 	data.aabb = AABB(Vector3(1, 2, 3), Vector3(4, 5, 6))
-	data.projection = Projection(Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4))
+	data.projection = Projection(
+		Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4)
+	)
 	data.color = Color(0.1, 0.2, 0.3, 0.4)
 	data.packed_byte_array = PackedByteArray([1, 2, 3])
 	data.packed_int32_array = PackedInt32Array([1, 2, 3])
@@ -93,25 +101,36 @@ func _init() -> void:
 	data.packed_vector2_array = PackedVector2Array([Vector2(1, 2), Vector2(3, 4)])
 	data.packed_vector3_array = PackedVector3Array([Vector3(1, 2, 3), Vector3(4, 5, 6)])
 	data.packed_vector4_array = PackedVector4Array([Vector4(1, 2, 3, 4), Vector4(5, 6, 7, 8)])
-	data.packed_color_array = PackedColorArray([Color(0.1, 0.2, 0.3, 0.4), Color(0.5, 0.6, 0.7, 0.8)])
-
+	data.packed_color_array = PackedColorArray(
+		[Color(0.1, 0.2, 0.3, 0.4), Color(0.5, 0.6, 0.7, 0.8)]
+	)
 
 	# Serialize
 	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
 	print(JSON.stringify(serialized, "  "))
 
-
 	# Verify after JSON serialization
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize(JSON.parse_string(JSON.stringify(serialized)))
+	var deserialized: Data = ObjectSerializer.dictionary.deserialize(
+		JSON.parse_string(JSON.stringify(serialized))
+	)
 
 	assert(data.nested.string == deserialized.nested.string, "nested different")
 	assert(data.array_variant == deserialized.array_variant, "array_variant different")
 	assert(data.array_typed == deserialized.array_typed, "array_typed different")
-	assert(data.array_nested[0].string == deserialized.array_nested[0].string, "array_nested different")
-	assert(data.dictionary_variant == deserialized.dictionary_variant, "dictionary_variant different")
+	assert(
+		data.array_nested[0].string == deserialized.array_nested[0].string, "array_nested different"
+	)
+	assert(
+		data.dictionary_variant == deserialized.dictionary_variant, "dictionary_variant different"
+	)
 	assert(data.dictionary_typed == deserialized.dictionary_typed, "dictionary_typed different")
-	assert(data.dictionary_nested["data"].string == deserialized.dictionary_nested["data"].string, "dictionary nested different")
+	assert(
+		data.dictionary_nested["data"].string == deserialized.dictionary_nested["data"].string,
+		"dictionary nested different"
+	)
 	assert(data.string == deserialized.string, "string different")
+	assert(data.string_name == deserialized.string_name, "string_name different")
+	assert(data.exported == deserialized.exported, "exported different")
 	assert(data.integer == deserialized.integer, "integer different")
 	assert(data.floating_point == deserialized.floating_point, "floating_point different")
 	assert(data.vector2 == deserialized.vector2, "vector2 different")
@@ -131,15 +150,36 @@ func _init() -> void:
 	assert(data.projection == deserialized.projection, "projection different")
 	assert(data.color == deserialized.color, "color different")
 	assert(data.packed_byte_array == deserialized.packed_byte_array, "packed_byte_array different")
-	assert(data.packed_int32_array == deserialized.packed_int32_array , "packed_int32_array  different")
-	assert(data.packed_int64_array == deserialized.packed_int64_array, "packed_int64_array different")
-	assert(data.packed_float32_array == deserialized.packed_float32_array, "packed_float32_array different")
-	assert(data.packed_float64_array == deserialized.packed_float64_array, "packed_float64_array different")
-	assert(data.packed_string_array == deserialized.packed_string_array, "packed_string_array different")
-	assert(data.packed_vector2_array == deserialized.packed_vector2_array, "packed_vector2_array different")
-	assert(data.packed_vector3_array == deserialized.packed_vector3_array, "packed_vector3_array different")
-	assert(data.packed_vector4_array == deserialized.packed_vector4_array, "packed_vector4_array different")
-	assert(data.packed_color_array == deserialized.packed_color_array, "packed_color_array different")
-
-
-
+	assert(
+		data.packed_int32_array == deserialized.packed_int32_array, "packed_int32_array  different"
+	)
+	assert(
+		data.packed_int64_array == deserialized.packed_int64_array, "packed_int64_array different"
+	)
+	assert(
+		data.packed_float32_array == deserialized.packed_float32_array,
+		"packed_float32_array different"
+	)
+	assert(
+		data.packed_float64_array == deserialized.packed_float64_array,
+		"packed_float64_array different"
+	)
+	assert(
+		data.packed_string_array == deserialized.packed_string_array,
+		"packed_string_array different"
+	)
+	assert(
+		data.packed_vector2_array == deserialized.packed_vector2_array,
+		"packed_vector2_array different"
+	)
+	assert(
+		data.packed_vector3_array == deserialized.packed_vector3_array,
+		"packed_vector3_array different"
+	)
+	assert(
+		data.packed_vector4_array == deserialized.packed_vector4_array,
+		"packed_vector4_array different"
+	)
+	assert(
+		data.packed_color_array == deserialized.packed_color_array, "packed_color_array different"
+	)

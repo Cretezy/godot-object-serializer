@@ -4,11 +4,11 @@
 
 Features:
 
-- **Safety**: No remote code execution, can be used for untrusted data
-- **Dictionary/binary mode**: Dictionary mode can be used with `JSON.stringify`/`JSON.parse_string`, while binary mode can be used with `var_to_bytes``/`bytes_to_var`
-- **Objects**: Objects can be serialized, including inner classes and enum values
-- **Built-in types**: All built-in types (Vector2, Color, PackedInt32Array, etc) are serialized
-- **Efficient bytes**: When using dictionary mode, `PackedByteArray` is efficient serialized as base64
+- **Safety**: No remote code execution, can be used for untrusted data.
+- **Dictionary/binary mode**: Dictionary mode can be used with `JSON.stringify`/`JSON.parse_string`, while binary mode can be used with `var_to_bytes`/`bytes_to_var`.
+- **Objects**: Objects can be serialized, including inner classes and enum values.
+- **Built-in types**: All built-in types (Vector2, Color, PackedInt32Array, etc)
+- **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray` is efficiently serialized as base64 (instead of array of uint8).
 
 > NOTE: This library is not yet stable! The current API is unlikely to change, but object serialization will change with more features (constructor support, field filters, and more)
 
@@ -76,7 +76,7 @@ func json_serialization() -> void:
     "dictionary": {
       "position": {
         "._type": "Vector2",
-        "_": [
+        "._": [
           1.0,
           2.0
         ]
@@ -89,7 +89,7 @@ func json_serialization() -> void:
     },
     "packed_byte_array": {
       "._type": "PackedByteArray_Base64",
-      "_": "AQID"
+      "._": "AQID"
     },
     "string": "Lorem ipsum"
   }
@@ -163,6 +163,21 @@ class JsonData:
     result.string = data["string"]
     result.vector2 = Vector2(data["vector2"][0], data["vector2"][0])
     return result
+
+func _init():
+	var data = JsonData.new()
+	data.string = "hello world"
+	data.vector2 = Vector2(1, 2)
+	print(JSON.stringify(data.to_dict(), "\t"))
+	""" Output:
+  {
+    "string": "hello world",
+    "vector2": [
+      1.0,
+      2.0
+    ]
+  }
+	"""
 ```
 
 </details>
@@ -230,9 +245,23 @@ By default, this does not support serializing objects, unless `var_to_bytes_with
 
 Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (same as `JSON.from_native`).
 
-## How does it work?
+## Object Serialization
 
-TODO
+During serialization, all fields are serialized. This can be overriden by overriding [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized).
+
+During deserialization, all fields are set back on the object.
+
+If your object has a constructor, you must implement `_get_constructor_args(): Array` to return the arguments for your constructor:
+
+```gdscript
+class Data:
+	var name: String
+	func _init(init_name: String) -> void:
+		name = init_name
+
+	func _get_constructor_args() -> Array:
+		return [name]
+```
 
 ## API
 
@@ -264,6 +293,12 @@ It's not recommended to change these options, but they are available.
 
 The field containing the type in serialized object values. Not recommended to change.
 This should be set to something unlikely to clash with keys in objects/dictionaries.
+Can be changed but must be done before any serialization/deserizalization.
+
+#### `ObjectSerializer.args_field: String` (default: `._`)
+
+The field containing the constructor arguments in serialized object values. Not recommended to change.
+This should be set to something unlikely to clash with keys in objects.
 Can be changed but must be done before any serialization/deserizalization.
 
 #### `ObjectSerializer.object_type_prefix: String` (default: `Object_`)

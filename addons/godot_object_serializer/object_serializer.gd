@@ -1,22 +1,23 @@
 ## Main godot-object-serializer class.
 class_name ObjectSerializer
 
-
 # TODO: Replace with UID
 # Sub-serializers
 const dictionary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
 const binary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
 
-
 ## The field containing the type in serialized object values. Not recommended to change.
 ## This should be set to something unlikely to clash with keys in objects/dictionaries.
 ## Can be changed but must be done before any serialization/deserizalization.
 static var type_field := "._type"
+## The field containing the constructor arguments in serialized object values. Not recommended to change.
+## This should be set to something unlikely to clash with keys in objects.
+## Can be changed but must be done before any serialization/deserizalization.
+static var args_field := "._"
 ## The prefix for object types stored in [type_field]. Not recommended to change.
 ## This should be set to something unlikely to clash with built-in type names.
 ## Can be changed but must be done before any serialization/deserizalization.
 static var object_type_prefix := "Object_"
-
 
 static var _script_registry: Dictionary[String, ScriptRegistryEntry]
 
@@ -61,22 +62,27 @@ class ScriptRegistryEntry:
 	var script_type: Script
 
 	func serialize(value: Variant, next: Callable) -> Variant:
-		var result := {
-			ObjectSerializer.type_field: type
-		}
+		var result := {ObjectSerializer.type_field: type}
 
 		for property: Dictionary in value.get_property_list():
 			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
 				result[property.name] = next.call(value.get(property.name))
 
+		if value.has_method("_get_constructor_args"):
+			var args: Array = value._get_constructor_args()
+			result[ObjectSerializer.args_field] = args
+
 		return result
 
-
 	func deserialize(value: Variant, next: Callable) -> Variant:
-		var instance: Variant = script_type.new()
+		var instance: Variant
+		if value.has(ObjectSerializer.args_field):
+			instance = script_type.new.callv(value[ObjectSerializer.args_field])
+		else:
+			instance = script_type.new()
 
 		for key: String in value:
-			if key == ObjectSerializer.type_field:
+			if key == ObjectSerializer.type_field || key == ObjectSerializer.args_field:
 				continue
 			var key_value: Variant = next.call(value[key])
 			match typeof(key_value):
@@ -87,6 +93,4 @@ class ScriptRegistryEntry:
 				_:
 					instance[key] = key_value
 
-
 		return instance
-	

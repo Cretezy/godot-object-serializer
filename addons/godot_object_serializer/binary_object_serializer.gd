@@ -9,7 +9,13 @@ static func serialize(value: Variant) -> Variant:
 			var name: StringName = value.get_script().get_global_name()
 			var object_entry := ObjectSerializer._get_entry(name, value.get_script())
 			if !object_entry:
-				assert(false, "Could not find type (%s) in registry\n%s" % [name if name else "no name", value.get_script().source_code]);
+				assert(
+					false,
+					(
+						"Could not find type (%s) in registry\n%s"
+						% [name if name else "no name", value.get_script().source_code]
+					)
+				)
 
 			return object_entry.serialize(value, serialize)
 		TYPE_ARRAY:
@@ -20,7 +26,7 @@ static func serialize(value: Variant) -> Variant:
 				result[i] = serialize(value[i])
 			return result
 
-	return value;
+	return value
 
 
 static func deserialize(value: Variant) -> Variant:
@@ -31,10 +37,10 @@ static func deserialize(value: Variant) -> Variant:
 				if type.begins_with(ObjectSerializer.object_type_prefix):
 					var entry := ObjectSerializer._get_entry(type)
 					if !entry:
-						assert(false, "Could not find type (%s) in registry" % type);
+						assert(false, "Could not find type (%s) in registry" % type)
 
 					return entry.deserialize(value, deserialize)
-			
+
 			var result := {}
 			for i: Variant in value:
 				result[i] = deserialize(value[i])
@@ -43,4 +49,3 @@ static func deserialize(value: Variant) -> Variant:
 			return value.map(deserialize)
 
 	return value
-
