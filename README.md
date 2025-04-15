@@ -5,8 +5,8 @@
 Features:
 
 - **Safety**: No remote code execution, can be used for untrusted data.
-- **Dictionary/binary mode**: Dictionary mode can be used with `JSON.stringify`/`JSON.parse_string`, while binary mode can be used with `var_to_bytes`/`bytes_to_var`.
-- **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors.
+- **Dictionary/binary mode**: Dictionary mode can be used for JSON serialization (`JSON.stringify`/`JSON.parse_string`), while binary mode can be used with binary serialization (`var_to_bytes`/`bytes_to_var`). Provides helpers to serialize directly to JSON/binary.
+- **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors and custom serializer/deserializer.
 - **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc) are supported
 - **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray`s are efficiently serialized as base64 (instead of array of uint8).
 
