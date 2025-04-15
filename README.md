@@ -36,7 +36,8 @@ class Data:
 	# Supports nested data, either as a field or in array/dictionary
 	var nested: DataResource
 
-class DataResource extends Resource:
+class DataResource:
+	extends Resource
 	var name: String
 
 enum State { OPENED, CLOSED }
@@ -53,8 +54,8 @@ func _init() -> void:
 	data.vector = Vector3(1, 2, 3)
 	data.enum_state = State.CLOSED
 	data.array = [1, 2]
-	data.dictionary = { "position": Vector2(1, 2) }
-	data.packed_byte_array = PackedByteArray([1, 2, 3])
+	data.dictionary = {"position": Vector2(1, 2)}
+	data.packed_byte_array = PackedByteArray([1, 2, 3, 4, 5, 6, 7, 8])
 	var data_resource := DataResource.new()
 	data_resource.name = "dolor sit amet"
 	data.nested = data_resource
@@ -96,7 +97,7 @@ func json_serialization() -> void:
 		},
 		"packed_byte_array": {
 			"._type": "PackedByteArray_Base64",
-			"._": "AQID"
+			"._": "AQIDBAUGBwg="
 		},
 		"nested": {
 			"._type": "Object_DataResource",
@@ -378,4 +379,4 @@ assert(data.dictionary_typed.value == 1)
 
 ## Development
 
-There's test scripts inside the `tests` directory which can be ran using: `godot --headless --quit -s tests/quick_start.gd`
+Test scripts inside the `tests` directory can be used for testing. Run with: `godot --headless --quit -s tests/quick_start.gd`

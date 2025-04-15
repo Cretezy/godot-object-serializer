@@ -1,5 +1,6 @@
 extends SceneTree
 
+
 # Example data class. Can extends any type, include Resource
 class Data:
 	# Supports all primitive types (String, int, float, bool, null), including @export-ed variables
@@ -17,16 +18,19 @@ class Data:
 	# Supports nested data, either as a field or in array/dictionary
 	var nested: DataResource
 
-class DataResource extends Resource:
+
+class DataResource:
+	extends Resource
 	var name: String
+
 
 enum State { OPENED, CLOSED }
 
-
 var data := Data.new()
 
+
 func _init() -> void:
-	# Register possible object scripts
+	# Required: Register possible object scripts
 	ObjectSerializer.register_script("Data", Data)
 	ObjectSerializer.register_script("DataResource", DataResource)
 
@@ -34,8 +38,8 @@ func _init() -> void:
 	data.vector = Vector3(1, 2, 3)
 	data.enum_state = State.CLOSED
 	data.array = [1, 2]
-	data.dictionary = { "position": Vector2(1, 2) }
-	data.packed_byte_array = PackedByteArray([1, 2, 3])
+	data.dictionary = {"position": Vector2(1, 2)}
+	data.packed_byte_array = PackedByteArray([1, 2, 3, 4, 5, 6, 7, 8])
 	var data_resource := DataResource.new()
 	data_resource.name = "dolor sit amet"
 	data.nested = data_resource
@@ -77,7 +81,7 @@ func json_serialization() -> void:
         },
         "packed_byte_array": {
             "._type": "PackedByteArray_Base64",
-            "._": "AQID"
+            "._": "AQIDBAUGBwg="
         },
         "nested": {
             "._type": "Object_DataResource",
@@ -104,11 +108,14 @@ func binary_serialization() -> void:
 	var deserialized: Data = ObjectSerializer.binary.deserialize(parsed_bytes)
 	_assert_data(deserialized)
 
+
 func _assert_data(deserialized: Data) -> void:
 	assert(data.string == deserialized.string, "string is different")
 	assert(data.vector == deserialized.vector, "vector is different")
 	assert(data.enum_state == deserialized.enum_state, "enum_state is different")
 	assert(data.array == deserialized.array, "array is different")
 	assert(data.dictionary == deserialized.dictionary, "dictionary is different")
-	assert(data.packed_byte_array == deserialized.packed_byte_array, "packed_byte_array is different")
+	assert(
+		data.packed_byte_array == deserialized.packed_byte_array, "packed_byte_array is different"
+	)
 	assert(data.nested.name == deserialized.nested.name, "nested.name is different")
