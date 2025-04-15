@@ -6,11 +6,11 @@ Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`J
 
 Features:
 
-- **Safety**: No remote code execution, can be used for untrusted data.
+- **Safety**: No remote code execution, can be used for untrusted data (e.g. save state system or networking).
 - **Dictionary/binary mode**: Dictionary mode can be used for JSON serialization (`JSON.stringify`/`JSON.parse_string`), while binary mode can be used with binary serialization (`var_to_bytes`/`bytes_to_var`). Provides helpers to serialize directly to JSON/binary.
-- **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors and custom serializer/deserializer.
-- **Built-in types**: All built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Color, Packed\*Array, etc etc) are supported.
-- **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray`s are efficiently serialized as base64 (instead of array of uint8).
+- **Objects**: Objects can be serialized, including enums, inner classes, and nested values. Supports class constructors and custom serializer/deserializer.
+- **Built-in types**: All built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Quaternion, Color, Plane, Basis, AABB, Projection, Packed\*Array, etc) are supported.
+- **Efficient JSON bytes**: When serialiazing to JSON, `PackedByteArray`s are efficiently serialized as base64, reducing byte count by ~40%
 
 > Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
 
