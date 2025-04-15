@@ -203,7 +203,7 @@ func _init():
 
 </details>
 
-This is very flexible but very tedious as every object type must be manually serialized.
+This is flexible but very tedious as every object type must be manually serialized and deserialized.
 
 ### `JSON.from_native`
 
@@ -260,11 +260,11 @@ func _init():
 
 ### `var_to_bytes` / `bytes_to_var`
 
-Godot has a built-in way to serialize more types such as Vector2, Vector3, Transform3D, etc, to binary.
+Godot has a built-in way to serialize more types such as Vector2, Vector3, Transform3D, etc, to bytes.
 
 By default, this does not support serializing objects, unless `var_to_bytes_with_objects`/`bytes_to_var_with_objects` is used. **This is unsafe** (can cause remote code execution) and `*_with_objects` should never be used with untrusted data.
 
-Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (same as `JSON.from_native`).
+Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (similar to the `JSON.from_native` example above).
 
 ## Object Serialization
 
@@ -272,11 +272,14 @@ During serialization, all fields are serialized. This can be overriden by overri
 
 During deserialization, all fields are set back on the object.
 
+### Constructors
+
 If your class has a constructor, you must implement `_get_constructor_args(): Array` to return the arguments for your constructor:
 
 ```gdscript
 class Data:
 	var name: String
+
 	func _init(init_name: String) -> void:
 		name = init_name
 
@@ -288,7 +291,7 @@ class Data:
 
 Classes can implement `_serializer(serialize: Callable) -> Dictionary` and `static _deserialize(data: Dictionary, deserialize: Callable) -> Variant` to customize the serialization.
 
-Note that the type field will automatically be added after running your custom serializer, and the field will be present in the deserializer's `data`. Having a custom serializer/deserializer skips constructor handling.
+Note that the type field (by default `._type`) will automatically be added after your custom serializer, and the field will be present in the deserializer's `data`. Having a custom serializer/deserializer skips constructor handling.
 
 To serialize/deserialize nested data, use the `serialize`/`deserialize` Callables provided to your method. This is only required for non-primitives.
 
@@ -314,19 +317,18 @@ class Data:
 
 <details>
 <summary>Example output</summary>
+
 ```json
 {
   "._type": "Object_Data",
   "key": "hello world",
   "pos": {
     "._type": "Vector2",
-    "._": [
-      1.0,
-      2.0
-    ]
+    "._": [1.0, 2.0]
   }
 }
 ```
+
 </details>
 
 ## API
