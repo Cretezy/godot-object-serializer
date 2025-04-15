@@ -3,6 +3,7 @@
 class_name BinaryObjectSerializer
 
 
+## Serialize [data] into dictionary which can be passed to [var_to_bytes].
 static func serialize(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
@@ -29,6 +30,7 @@ static func serialize(value: Variant) -> Variant:
 	return value
 
 
+## Deserialize dictionary [data] from [bytes_to_var] into objects.
 static func deserialize(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_DICTIONARY:

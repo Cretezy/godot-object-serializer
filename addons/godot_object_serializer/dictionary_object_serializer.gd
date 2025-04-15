@@ -17,6 +17,7 @@ const _JSON_SERIALIZABLE_TYPES = [
 ]
 
 
+## Serialize [data] into dictionary which can be passed to [JSON.stringify].
 static func serialize(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
@@ -58,6 +59,7 @@ static func serialize(value: Variant) -> Variant:
 	}
 
 
+## Deserialize dictionary [data] from [JSON.parse_string] into objects.
 static func deserialize(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_DICTIONARY:

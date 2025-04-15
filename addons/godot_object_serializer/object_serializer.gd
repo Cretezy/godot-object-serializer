@@ -22,6 +22,8 @@ static var object_type_prefix := "Object_"
 static var _script_registry: Dictionary[String, ScriptRegistryEntry]
 
 
+## Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
+## [name] can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 static func register_script(name: StringName, script: Script) -> void:
 	var script_name := _get_script_name(script, name)
 	assert(script_name, "Script must have name\n" + script.source_code)

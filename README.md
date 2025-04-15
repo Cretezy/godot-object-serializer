@@ -10,7 +10,7 @@ Features:
 - **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc)
 - **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray` is efficiently serialized as base64 (instead of array of uint8).
 
-> Note: This library is not yet stable! The current API is unlikely to change, but object serialization will change with more features (constructor support, field filters, and more)
+> Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
 
 ## Quick Start
 
@@ -45,7 +45,7 @@ enum State { OPENED, CLOSED }
 var data := Data.new()
 
 func _init() -> void:
-	# Register possible object scripts
+	# Required: Register possible object scripts
 	ObjectSerializer.register_script("Data", Data)
 	ObjectSerializer.register_script("DataResource", DataResource)
 
@@ -69,40 +69,40 @@ func json_serialization() -> void:
 	var json := JSON.stringify(serialized, "\t")
 	print(json)
 	""" Output:
-  {
-    "._type": "Object_Data",
-    "string": "Lorem ipsum",
-    "vector": {
-      "._type": "Vector3",
-      "._": [
-        1.0,
-        2.0,
-        3.0
-      ]
-    },
-    "enum_state": 1,
-    "array": [
-      1,
-      2
-    ],
-    "dictionary": {
-      "position": {
-        "._type": "Vector2",
-        "._": [
-          1.0,
-          2.0
-        ]
-      }
-    },
-    "packed_byte_array": {
-      "._type": "PackedByteArray_Base64",
-      "._": "AQID"
-    },
-    "nested": {
-      "._type": "Object_DataResource",
-      "name": "dolor sit amet"
-    }
-  }
+	{
+		"._type": "Object_Data",
+		"string": "Lorem ipsum",
+		"vector": {
+			"._type": "Vector3",
+			"._": [
+				1.0,
+				2.0,
+				3.0
+			]
+		},
+		"enum_state": 1,
+		"array": [
+			1,
+			2
+		],
+		"dictionary": {
+			"position": {
+				"._type": "Vector2",
+				"._": [
+					1.0,
+					2.0
+				]
+			}
+		},
+		"packed_byte_array": {
+			"._type": "PackedByteArray_Base64",
+			"._": "AQID"
+		},
+		"nested": {
+			"._type": "Object_DataResource",
+			"name": "dolor sit amet"
+		}
+	}
 	"""
 
 	# Verify after JSON deserialization
@@ -161,19 +161,19 @@ To use `JSON.stringify`, the traditional way is to manually serialize to a JSON-
 
 ```gdscript
 class JsonData:
-  var string: String
-  var vector2: Vector2
+	var string: String
+	var vector2: Vector2
 
-  func to_dict() -> Dictionary:
-    return {
-      "string": string,
-      "vector2": [vector2.x, vector2.y]
-    }
-  static func from_dict(data: Dictionary) -> JsonData:
-    var result := JsonData.new()
-    result.string = data["string"]
-    result.vector2 = Vector2(data["vector2"][0], data["vector2"][0])
-    return result
+	func to_dict() -> Dictionary:
+		return {
+			"string": string,
+			"vector2": [vector2.x, vector2.y]
+		}
+	static func from_dict(data: Dictionary) -> JsonData:
+		var result := JsonData.new()
+		result.string = data["string"]
+		result.vector2 = Vector2(data["vector2"][0], data["vector2"][0])
+		return result
 
 func _init():
 	var data = JsonData.new()
@@ -181,13 +181,13 @@ func _init():
 	data.vector2 = Vector2(1, 2)
 	print(JSON.stringify(data.to_dict(), "\t"))
 	""" Output:
-  {
-    "string": "hello world",
-    "vector2": [
-      1.0,
-      2.0
-    ]
-  }
+	{
+		"string": "hello world",
+		"vector2": [
+			1.0,
+			2.0
+		]
+	}
 	"""
 ```
 
@@ -228,21 +228,21 @@ func _init():
 	data.vector2 = Vector2(1, 2)
 	print(JSON.stringify(JSON.from_native(data.to_dict()), "\t"))
 	""" Output:
-  {
-    "type": "Dictionary",
-    "args": [
-      "s:string",
-      "s:hello world",
-      "s:vector2",
-      {
-        "type": "Vector2",
-        "args": [
-          1.0,
-          2.0
-        ],
-      }
-    ]
-  }
+	{
+		"type": "Dictionary",
+		"args": [
+			"s:string",
+			"s:hello world",
+			"s:vector2",
+			{
+				"type": "Vector2",
+				"args": [
+					1.0,
+					2.0
+				],
+			}
+		]
+	}
 	"""
 ```
 
@@ -279,6 +279,8 @@ class Data:
 ### `ObjectSerializer.register_script(name: StringName, script: Script) -> void`
 
 Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
+
+Name can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 
 ### `ObjectSerializer.dictionary.serialize(data: Variant) -> Variant`
 
@@ -338,13 +340,13 @@ Godot's JSON serialization converts ints to floats when it's typed as `Variant`.
 
 ```gdscript
 class Data:
-  var value_variant: Variant
-  var array_variant: Array[Variant]
-  var dictionary_variant: Dictionary[String, Variant]
+	var value_variant: Variant
+	var array_variant: Array[Variant]
+	var dictionary_variant: Dictionary[String, Variant]
 
-  var value_typed: int
-  var array_typed: Array[int]
-  var dictionary_typed: Dictionary[String, int]
+	var value_typed: int
+	var array_typed: Array[int]
+	var dictionary_typed: Dictionary[String, int]
 
 
 var data = Data.new()
@@ -358,9 +360,9 @@ data.dictionary_typed.value = 1
 
 # Serialize/deserialize through JSON
 data = ObjectSerializer.dictionary.deserialize(
-  JSON.parse_string(JSON.stringify(
-    ObjectSerializer.dictionary.serialize(data)
-  ))
+	JSON.parse_string(JSON.stringify(
+		ObjectSerializer.dictionary.serialize(data)
+	))
 )
 
 
