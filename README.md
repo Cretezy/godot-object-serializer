@@ -6,29 +6,30 @@ Features:
 
 - **Safety**: No remote code execution, can be used for untrusted data.
 - **Dictionary/binary mode**: Dictionary mode can be used with `JSON.stringify`/`JSON.parse_string`, while binary mode can be used with `var_to_bytes`/`bytes_to_var`.
-- **Objects**: Objects can be serialized, including inner classes and enum values.
-- **Built-in types**: All built-in types (Vector2, Color, PackedInt32Array, etc)
+- **Objects**: Objects can be serialized, including inner classes and enum values. Supports constructors.
+- **Built-in types**: All built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D Color, Packed\*Array, etc)
 - **Efficient JSON bytes**: When using dictionary mode, `PackedByteArray` is efficiently serialized as base64 (instead of array of uint8).
 
-> NOTE: This library is not yet stable! The current API is unlikely to change, but object serialization will change with more features (constructor support, field filters, and more)
+> Note: This library is not yet stable! The current API is unlikely to change, but object serialization will change with more features (constructor support, field filters, and more)
 
 ## Quick Start
 
 Start by [installing the plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html).
 
-Note: Will be added to Asset Library once stable.
+> Note: Will be added to Asset Library once stable.
 
 ```gdscript
 # Example data class. Can extends any type, include Resource
 class Data:
-	# Supports all built-in types (String, int, float, etc)
-	var string: String
+	# Supports all primitive types (String, int, float, bool, null), including @export-ed variables
+	@export var string: String
+	# Supports all extended built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Color, Packed*Array, etc)
+	var vector: Vector3
 	# Supports enum
 	var enum_state: State
 	# Supports arrays, including Array[Variant]
 	var array: Array[int]
 	# Supports dictionaries, including Dictionary[Variant, Variant]
-	# Supports all extended built-in types (Vector2, Color, PackedInt32Array, etc)
 	var dictionary: Dictionary[String, Vector2]
 	# Supports efficient byte array serialization to base64
 	var packed_byte_array: PackedByteArray
@@ -49,6 +50,7 @@ func _init() -> void:
 	ObjectSerializer.register_script("DataResource", DataResource)
 
 	data.string = "Lorem ipsum"
+	data.vector = Vector3(1, 2, 3)
 	data.enum_state = State.CLOSED
 	data.array = [1, 2]
 	data.dictionary = { "position": Vector2(1, 2) }
@@ -66,9 +68,19 @@ func json_serialization() -> void:
 	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
 	var json := JSON.stringify(serialized, "\t")
 	print(json)
-  """ Output:
+	""" Output:
   {
     "._type": "Object_Data",
+    "string": "Lorem ipsum",
+    "vector": {
+      "._type": "Vector3",
+      "._": [
+        1.0,
+        2.0,
+        3.0
+      ]
+    },
+    "enum_state": 1,
     "array": [
       1,
       2
@@ -82,18 +94,16 @@ func json_serialization() -> void:
         ]
       }
     },
-    "enum_state": 1,
-    "nested": {
-      "._type": "Object_DataResource",
-      "name": "dolor sit amet"
-    },
     "packed_byte_array": {
       "._type": "PackedByteArray_Base64",
       "._": "AQID"
     },
-    "string": "Lorem ipsum"
+    "nested": {
+      "._type": "Object_DataResource",
+      "name": "dolor sit amet"
+    }
   }
-  """
+	"""
 
 	# Verify after JSON deserialization
 	var parsed_json = JSON.parse_string(json)
@@ -115,6 +125,7 @@ func binary_serialization() -> void:
 
 func _assert_data(deserialized: Data) -> void:
 	assert(data.string == deserialized.string, "string is different")
+	assert(data.vector == deserialized.vector, "vector is different")
 	assert(data.enum_state == deserialized.enum_state, "enum_state is different")
 	assert(data.array == deserialized.array, "array is different")
 	assert(data.dictionary == deserialized.dictionary, "dictionary is different")
