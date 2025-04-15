@@ -1,10 +1,10 @@
 # Godot Object Serializer
 
-**Safely** serialize objects (and built-in Godot types) to dictionaries for JSON and binary serialization.
+**Safely** serialize objects (and built-in Godot types) to **JSON or binary**. Allows you to register scripts/classes and convert values into JSON/bytes, without any risk of code execution. Perfect for save state systems or networking.
 
 Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects` which allow for code execution), but this library can!
 
-Features:
+**Features:**
 
 - **Safety**: No remote code execution, can be used for untrusted data (e.g. save state system or networking).
 - **Dictionary/binary mode**: Dictionary mode can be used for JSON serialization (`JSON.stringify`/`JSON.parse_string`), while binary mode can be used with binary serialization (`var_to_bytes`/`bytes_to_var`). Provides helpers to serialize directly to JSON/binary.
