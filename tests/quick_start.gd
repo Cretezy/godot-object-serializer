@@ -46,34 +46,35 @@ func _init() -> void:
 func json_serialization() -> void:
 	# Serialize to JSON
 	var serialized: Variant = ObjectSerializer.dictionary.serialize(data)
-	var json := JSON.stringify(serialized, "  ")
+	var json := JSON.stringify(serialized, "\t")
 	print(json)
 	""" Output:
-  	{
-    	"._type": "Object_Data",
-    	"string": "Lorem ipsum",
-    	"array": [
-      	1,
-      	2
-    	],
-    	"dictionary": {
-      	"position": {
-        	"._type": "Vector2",
-        	"_": [
-          	1.0,
-          	2.0
-        	]
-      	}
-    	},
-    	"packed_byte_array": {
-      	"._type": "PackedByteArray_Base64",
-      	"_": "AQID"
-    	},
-    	"nested": {
-      	"._type": "Object_DataResource",
-      	"name": "dolor sit amet"
-    	}
-  	}
+	{
+        "._type": "Object_Data",
+        "array": [
+                1,
+                2
+        ],
+        "dictionary": {
+                "position": {
+                        "._type": "Vector2",
+                        "_": [
+                                1.0,
+                                2.0
+                        ]
+                }
+        },
+        "enum_state": 1,
+        "nested": {
+                "._type": "Object_DataResource",
+                "name": "dolor sit amet"
+        },
+        "packed_byte_array": {
+                "._type": "PackedByteArray_Base64",
+                "_": "AQID"
+        },
+        "string": "Lorem ipsum"
+	}
 	"""
 
 	# Verify after JSON deserialization

@@ -4,8 +4,8 @@ class_name ObjectSerializer
 
 # TODO: Replace with UID
 # Sub-serializers
-const dictionary = preload("res://addons/godot-object-serializer/dictionary_object_serializer.gd")
-const binary = preload("res://addons/godot-object-serializer/dictionary_object_serializer.gd")
+const dictionary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
+const binary = preload("res://addons/godot_object_serializer/dictionary_object_serializer.gd")
 
 
 ## The field containing the type in serialized object values. Not recommended to change.
