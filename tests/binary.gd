@@ -108,15 +108,15 @@ func _init() -> void:
 	)
 
 	# Serialize
-	var serialized: Variant = ObjectSerializer.binary.serialize_var(data)
+	var serialized: Variant = BinarySerializer.serialize_var(data)
 	print(serialized)
 	var bytes = var_to_bytes(serialized)
-	assert(bytes == ObjectSerializer.binary.serialize_bytes(data))
+	assert(bytes == BinarySerializer.serialize_bytes(data))
 
 	# Verify after binary serialization
-	var deserialized: Data = ObjectSerializer.binary.deserialize_var(bytes_to_var(bytes))
+	var deserialized: Data = BinarySerializer.deserialize_var(bytes_to_var(bytes))
 	_assert_data(deserialized)
-	_assert_data(ObjectSerializer.binary.deserialize_bytes(bytes))
+	_assert_data(BinarySerializer.deserialize_bytes(bytes))
 
 
 func _assert_data(deserialized: Data) -> void:

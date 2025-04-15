@@ -68,8 +68,8 @@ func _init() -> void:
 
 func json_serialization() -> void:
 	# Serialize to JSON
-	# Alternative: ObjectSerializer.dictionary.serialize_json(data)
-	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
+	# Alternative: DictionarySerializer.serialize_json(data)
+	var serialized: Variant = DictionarySerializer.serialize_var(data)
 	var json := JSON.stringify(serialized, "\t")
 	print(json)
 	""" Output:
@@ -110,24 +110,24 @@ func json_serialization() -> void:
 	"""
 
 	# Verify after JSON deserialization
-	# Alternative: ObjectSerializer.dictionary.deserialize_json(json)
+	# Alternative: DictionarySerializer.deserialize_json(json)
 	var parsed_json = JSON.parse_string(json)
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(parsed_json)
+	var deserialized: Data = DictionarySerializer.deserialize_var(parsed_json)
 	_assert_data(deserialized)
 
 
 func binary_serialization() -> void:
 	# Serialize to bytes
-	# Alternative: ObjectSerializer.binary.serialize_bytes(data)
-	var serialized: Variant = ObjectSerializer.binary.serialize_var(data)
+	# Alternative: BinarySerializer.serialize_bytes(data)
+	var serialized: Variant = BinarySerializer.serialize_var(data)
 	var bytes := var_to_bytes(serialized)
 	print(bytes)
 	# Output: List of bytes
 
 	# Verify after bytes deserialization.
-	# Alternative: ObjectSerializer.binary.deserialize_bytes(bytes)
+	# Alternative: BinarySerializer.deserialize_bytes(bytes)
 	var parsed_bytes = bytes_to_var(bytes)
-	var deserialized: Data = ObjectSerializer.binary.deserialize_var(parsed_bytes)
+	var deserialized: Data = BinarySerializer.deserialize_var(parsed_bytes)
 	_assert_data(deserialized)
 
 
@@ -266,6 +266,20 @@ By default, this does not support serializing objects, unless `var_to_bytes_with
 
 Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (similar to the `JSON.from_native` example above).
 
+## Registering Scripts
+
+Registering scripts is required for godot-object-serializer to know how to serialize and deserialize your objects. You can do so in 2 ways:
+
+```gdscript
+ObjectSerializer.register_script("Data", Data)
+
+# Or, if you have multiple
+ObjectSerializer.register_scripts({
+	"Data"= Data,
+	"DataResource" = DataResource,
+})
+```
+
 ## Object Serialization
 
 During serialization, all fields are serialized. This can be overriden by overriding [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized).
@@ -331,6 +345,24 @@ class Data:
 
 </details>
 
+## Glossary
+
+- "Objects" are are instances of [objects](https://docs.godotengine.org/en/stable/classes/class_object.html).
+- "Scripts" refers to [scripts](https://docs.godotengine.org/en/stable/classes/class_script.html), which can be GDScript or C#.
+- "Classes" refers to the classes inside of scripts. Every GDScript is a class, and can include inner class
+
+```gdscript
+# This file is the "Data" class. Extends Object by default
+class_name Data
+
+# This is an inner class which extends Resource
+class DataResource:
+	extends Resource
+
+# This is an object
+var data := Data.new()
+```
+
 ## API
 
 ### `ObjectSerializer.register_script(name: StringName, script: Script) -> void`
@@ -339,37 +371,43 @@ Registers a script (a object type) to be serialized/deserialized. All custom typ
 
 Name can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 
-### `ObjectSerializer.dictionary.serialize_var(data: Variant) -> Variant`
+### `ObjectSerializer.register_scripts(scripts: Dictionary[String, Script]) -> void`
+
+Registers multiple scripts (object types) to be serialized/deserialized from a dictionary.
+
+See `ObjectSerializer.register_script`.
+
+### `DictionarySerializer.serialize_var(data: Variant) -> Variant`
 
 Serialize `data` into value which can be passed to `JSON.stringify`.
 
-### `ObjectSerializer.dictionary.serialize_json(value: Variant, indent := "", sort_keys := true, full_precision := false) -> Variant`
+### `DictionarySerializer.serialize_json(value: Variant, indent := "", sort_keys := true, full_precision := false) -> Variant`
 
-Serialize `data` into JSON string with `ObjectSerializer.dictionary.serialize_var` and `JSON.stringify`. Supports same arguments as `JSON.stringify`
+Serialize `data` into JSON string with `DictionarySerializer.serialize_var` and `JSON.stringify`. Supports same arguments as `JSON.stringify`
 
-### `ObjectSerializer.dictionary.deserialize_var(data: Variant) -> Variant`
+### `DictionarySerializer.deserialize_var(data: Variant) -> Variant`
 
 Deserialize `data` from `JSON.parse_string` into value.
 
-### `ObjectSerializer.dictionary.deserialize_json(data: String) -> Variant`
+### `DictionarySerializer.deserialize_json(data: String) -> Variant`
 
-Deserialize JSON string `data` to value with `JSON.parse_string` and `ObjectSerializer.dictionary.deserialize_var`.
+Deserialize JSON string `data` to value with `JSON.parse_string` and `DictionarySerializer.deserialize_var`.
 
-### `ObjectSerializer.binary.serialize_var(data: Variant) -> Variant`
+### `BinarySerializer.serialize_var(data: Variant) -> Variant`
 
 Serialize `data` to value which can be passed to `var_to_bytes`.
 
-### `ObjectSerializer.binary.serialize_bytes(data: Variant) -> PackedByteArray`
+### `BinarySerializer.serialize_bytes(data: Variant) -> PackedByteArray`
 
-Serialize `data` into bytes with `ObjectSerializer.binary.serialize_var` and `var_to_bytes`.
+Serialize `data` into bytes with `BinarySerializer.serialize_var` and `var_to_bytes`.
 
-### `ObjectSerializer.binary.deserialize_var(data: Variant) -> Variant`
+### `BinarySerializer.deserialize_var(data: Variant) -> Variant`
 
 Deserialize `data` from `bytes_to_var` to value.
 
-### `ObjectSerializer.binary.deserialize_bytes(data: PackedByteArray) -> Variant`
+### `BinarySerializer.deserialize_bytes(data: PackedByteArray) -> Variant`
 
-Deserialize bytes `data` to value with `bytes_to_var` and `ObjectSerializer.binary.deserialize_var`.
+Deserialize bytes `data` to value with `bytes_to_var` and `BinarySerializer.deserialize_var`.
 
 ### Settings
 
@@ -393,15 +431,15 @@ The prefix for object types stored in `ObjectSerializer.type_field`. Not recomme
 This should be set to something unlikely to clash with built-in type names.
 Can be changed but must be done before any serialization/deserizalization.
 
-#### `ObjectSerializer.dictionary.bytes_as_base64: bool` (default: `true`)
+#### `DictionarySerializer.bytes_as_base64: bool` (default: `true`)
 
 Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8)
 It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
 Can be changed but must be done before any serialization/deserizalization.
 
-#### `ObjectSerializer.dictionary.bytes_to_base64_type: String` (default: `PackedByteArray_Base64`)
+#### `DictionarySerializer.bytes_to_base64_type: String` (default: `PackedByteArray_Base64`)
 
-The type of the object for PackedByteArray when `ObjectSerializer.dictionary.bytes_as_base64` is enabled.
+The type of the object for PackedByteArray when `DictionarySerializer.bytes_as_base64` is enabled.
 This should be set to something unlikely to clash with built-in type names or `ObjectSerializer.object_type_prefix`.
 Can be changed but must be done before any serialization/deserizalization.
 
@@ -438,8 +476,8 @@ data.dictionary_typed.value = 1
 
 
 # Serialize/deserialize through JSON
-data = ObjectSerializer.dictionary.deserialize_json(
-	ObjectSerializer.dictionary.serialize_json(data)
+data = DictionarySerializer.deserialize_json(
+	DictionarySerializer.serialize_json(data)
 )
 
 

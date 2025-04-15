@@ -108,15 +108,15 @@ func _init() -> void:
 	)
 
 	# Serialize
-	var serialized: Variant = ObjectSerializer.dictionary.serialize_var(data)
+	var serialized: Variant = DictionarySerializer.serialize_var(data)
 	var json = JSON.stringify(serialized, "\t")
 	print(json)
-	assert(json == ObjectSerializer.dictionary.serialize_json(data, "\t"))
+	assert(json == DictionarySerializer.serialize_json(data, "\t"))
 
 	# Verify after JSON serialization
-	var deserialized: Data = ObjectSerializer.dictionary.deserialize_var(JSON.parse_string(json))
+	var deserialized: Data = DictionarySerializer.deserialize_var(JSON.parse_string(json))
 	_assert_data(deserialized)
-	_assert_data(ObjectSerializer.dictionary.deserialize_json(json))
+	_assert_data(DictionarySerializer.deserialize_json(json))
 
 
 func _assert_data(deserialized: Data) -> void:

@@ -1,8 +1,13 @@
-## Serializer to be used with dictionary/JSON serialization.
+## Dictionary object serializer to be serialized to JSON.
 ## This serializes objects and built-in Godot types.
-class_name DictionaryObjectSerializer
+class_name DictionarySerializer
 
-## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8)
+# Types that can natively be represented in JSON
+const _JSON_SERIALIZABLE_TYPES = [
+	TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME
+]
+
+## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8).
 ## It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
 ## Can be changed but must be done before any serialization/deserizalization.
 static var bytes_as_base64 := true
@@ -11,13 +16,8 @@ static var bytes_as_base64 := true
 ## Can be changed but must be done before any serialization/deserizalization.
 static var bytes_to_base64_type = "PackedByteArray_Base64"
 
-# Types that can natively be represented in JSON
-const _JSON_SERIALIZABLE_TYPES = [
-	TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME
-]
 
-
-## Serialize [data] into value which can be passed to [JSON.stringify].
+## Serialize [param data] into value which can be passed to [method JSON.stringify].
 static func serialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
@@ -60,7 +60,7 @@ static func serialize_var(value: Variant) -> Variant:
 	}
 
 
-## Serialize [data] into JSON string with [serialize_var] and [JSON.stringify]. Supports same arguments as [JSON.stringify]
+## Serialize [param data] into JSON string with [method DictionaryObjectSerializer.serialize_var] and [method JSON.stringify]. Supports same arguments as [method JSON.stringify]
 static func serialize_json(
 	value: Variant, indent := "", sort_keys := true, full_precision := false
 ) -> String:
@@ -96,6 +96,6 @@ static func deserialize_var(value: Variant) -> Variant:
 	return value
 
 
-## Deserialize JSON string [data] to value with [JSON.parse_string] and [deserialize_var].
+## Deserialize JSON string [param data] to value with [method JSON.parse_string] and [method DictionaryObjectSerializer.deserialize_var].
 static func deserialize_json(value: String) -> Variant:
 	return deserialize_var(JSON.parse_string(value))
