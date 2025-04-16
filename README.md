@@ -73,13 +73,16 @@ class DataResource:
 enum State { OPENED, CLOSED }
 
 
-var data := Data.new()
-
-func _init() -> void:
+# _static_init is used to register scripts before all other code
+func _static_init() -> void:
 	# Required: Register possible object scripts
 	ObjectSerializer.register_script("Data", Data)
 	ObjectSerializer.register_script("DataResource", DataResource)
 
+
+var data := Data.new()
+
+func _init() -> void:
 	data.string = "Lorem ipsum"
 	data.vector = Vector3(1, 2, 3)
 	data.enum_state = State.CLOSED
