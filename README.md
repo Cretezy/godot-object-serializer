@@ -1,4 +1,4 @@
-# Godot Object Serializer
+# <img src="https://github.com/user-attachments/assets/958be42d-1a09-42db-b543-045fbad17c4b" height="24px"> Godot Object Serializer
 
 **Safely** serialize objects (and built-in Godot types) to **JSON or binary**. Allows you to register scripts/classes and convert values into JSON/bytes, without any risk of code execution. Perfect for save state systems or networking.
 
