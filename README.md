@@ -1,4 +1,4 @@
-# <img src="https://github.com/user-attachments/assets/958be42d-1a09-42db-b543-045fbad17c4b" height="24px"> Godot Object Serializer
+# <img src="https://raw.githubusercontent.com/Cretezy/godot-object-serializer/refs/heads/main/icon.png" height="24px"> Godot Object Serializer
 
 **Safely** serialize/deserialize objects (and built-in Godot types) to **JSON or binary** in Godot. Enables registration of scripts/classes and conversion of values to/from JSON or bytes, without any risk of code execution. Perfect for save state systems or networking.
 
@@ -311,6 +311,20 @@ class Data:
 
 	func _get_constructor_args() -> Array:
 		return [name]
+```
+
+### Excluded Properties
+
+You can exclude properties from serialization by implementing `_get_excluded_properties(): Array[String]`:
+
+```gdscript
+class Data:
+	var name: String
+	var position: Vector2
+
+	func _get_excluded_properties() -> Array[String]:
+		# name won't be serialized/deserialized, but position will
+		return ["name"]
 ```
 
 ### Custom Object Serializer

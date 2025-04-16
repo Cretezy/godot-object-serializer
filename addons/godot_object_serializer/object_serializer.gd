@@ -82,8 +82,15 @@ class _ScriptRegistryEntry:
 
 		var result := {ObjectSerializer.type_field: type}
 
+		var excluded_properties: Array[String] = (
+			value._get_excluded_properties() if value.has_method("_get_excluded_properties") else []
+		)
+
 		for property: Dictionary in value.get_property_list():
-			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			if (
+				property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE
+				and !excluded_properties.has(property.name)
+			):
 				result[property.name] = next.call(value.get(property.name))
 
 		if value.has_method("_get_constructor_args"):
@@ -102,8 +109,18 @@ class _ScriptRegistryEntry:
 		else:
 			instance = script_type.new()
 
+		var excluded_properties: Array[String] = (
+			instance._get_excluded_properties()
+			if instance.has_method("_get_excluded_properties")
+			else []
+		)
+
 		for key: String in value:
-			if key == ObjectSerializer.type_field || key == ObjectSerializer.args_field:
+			if (
+				key == ObjectSerializer.type_field
+				or key == ObjectSerializer.args_field
+				or excluded_properties.has(key)
+			):
 				continue
 			var key_value: Variant = next.call(value[key])
 			match typeof(key_value):
