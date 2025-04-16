@@ -74,15 +74,15 @@ enum State { OPENED, CLOSED }
 
 
 # _static_init is used to register scripts without having to instanciate the script.
-# It's recommended to either place all registrations in a single script, or have each script register itself
-func _static_init() -> void:
+# It's recommended to either place all registrations in a single script, or have each script register itself.
+static func _static_init() -> void:
 	# Required: Register possible object scripts
 	ObjectSerializer.register_script("Data", Data)
 	ObjectSerializer.register_script("DataResource", DataResource)
 
 
+# Setup testing data
 var data := Data.new()
-
 func _init() -> void:
 	data.string = "Lorem ipsum"
 	data.vector = Vector3(1, 2, 3)
