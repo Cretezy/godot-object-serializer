@@ -73,7 +73,8 @@ class DataResource:
 enum State { OPENED, CLOSED }
 
 
-# _static_init is used to register scripts before all other code
+# _static_init is used to register scripts without having to instanciate the script.
+# It's recommended to either place all registrations in a single script, or have each script register itself
 func _static_init() -> void:
 	# Required: Register possible object scripts
 	ObjectSerializer.register_script("Data", Data)
