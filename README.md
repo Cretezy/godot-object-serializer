@@ -294,7 +294,7 @@ ObjectSerializer.register_scripts({
 
 ## Object Serialization
 
-During serialization, all fields are serialized. This can be overridden by implementing [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized).
+During serialization, all fields are serialized. This can be overridden by implementing [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized) or [`_get_excluded_properties()`](#excluded-properties) (see below).
 
 During deserialization, all fields are set back on the object.
 
