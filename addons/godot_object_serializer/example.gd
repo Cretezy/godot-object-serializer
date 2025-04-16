@@ -1,9 +1,9 @@
 extends SceneTree
 
 
-# Example data class. Can extends any type, include Resource
+# Example data class. Can extend any type, include Resource
 class Data:
-	# Supports all primitive types (String, int, float, bool, null), including @export-ed variables
+	# Supports all primitive types (String, int, float, bool, null), including @export variables
 	@export var string: String
 	# Supports all extended built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Color, Packed*Array, etc)
 	var vector: Vector3

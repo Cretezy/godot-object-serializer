@@ -1,4 +1,4 @@
-## Dictionary object serializer to be serialized to JSON.
+## Serializer to be used with JSON serialization ([method JSON.stringify] and [method JSON.parse_string]).
 ## This serializes objects and built-in Godot types.
 class_name DictionarySerializer
 
@@ -9,12 +9,12 @@ const _JSON_SERIALIZABLE_TYPES = [
 
 ## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8).
 ## It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
-## Can be changed but must be done before any serialization/deserizalization.
+## This can be changed, but must be configured before any serialization or deserialization.
 static var bytes_as_base64 := true
 ## The type of the object for PackedByteArray when [bytes_as_base64] is enabled.
 ## This should be set to something unlikely to clash with built-in type names or [ObjectSerializer.object_type_prefix].
-## Can be changed but must be done before any serialization/deserizalization.
-static var bytes_to_base64_type = "PackedByteArray_Base64"
+## This can be changed, but must be configured before any serialization or deserialization.
+static var bytes_to_base64_type := "PackedByteArray_Base64"
 
 
 ## Serialize [param data] into value which can be passed to [method JSON.stringify].

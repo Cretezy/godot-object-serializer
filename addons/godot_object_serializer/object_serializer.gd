@@ -1,32 +1,32 @@
-## Main godot-object-serializer class.
+## Main godot-object-serializer class. Stores the script registry.
 class_name ObjectSerializer
 
 ## The field containing the type in serialized object values. Not recommended to change.
 ##
 ## This should be set to something unlikely to clash with keys in objects/dictionaries.
 ##
-## Can be changed but must be done before any serialization/deserizalization.
+## This can be changed, but must be configured before any serialization or deserialization.
 static var type_field := "._type"
 
 ## The field containing the constructor arguments in serialized object values. Not recommended to change.
 ##
 ## This should be set to something unlikely to clash with keys in objects.
 ##
-## Can be changed but must be done before any serialization/deserizalization.
+## This can be changed, but must be configured before any serialization or deserialization.
 static var args_field := "._"
 
 ## The prefix for object types stored in [type_field]. Not recommended to change.
 ##
 ## This should be set to something unlikely to clash with built-in type names.
 ##
-## Can be changed but must be done before any serialization/deserizalization.
+## This can be changed, but must be configured before any serialization or deserialization.
 static var object_type_prefix := "Object_"
 
 ## Registry of object types
 static var _script_registry: Dictionary[String, _ScriptRegistryEntry]
 
 
-## Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
+## Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered _before_ using this library.
 ## [param name] can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 static func register_script(name: StringName, script: Script) -> void:
 	var script_name := _get_script_name(script, name)

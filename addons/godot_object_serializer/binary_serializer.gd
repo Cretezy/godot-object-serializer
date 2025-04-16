@@ -1,4 +1,4 @@
-## Serializer to be used with Godot's built-in binary serialization (var_to_bytes and bytes_to_var).
+## Serializer to be used with Godot's built-in binary serialization ([method var_to_bytes] and [method bytes_to_var]).
 ## This serializes objects but leaves built-in Godot types as-is.
 class_name BinarySerializer
 

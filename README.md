@@ -1,16 +1,16 @@
 # <img src="https://github.com/user-attachments/assets/958be42d-1a09-42db-b543-045fbad17c4b" height="24px"> Godot Object Serializer
 
-**Safely** serialize objects (and built-in Godot types) to **JSON or binary**. Allows you to register scripts/classes and convert values into JSON/bytes, without any risk of code execution. Perfect for save state systems or networking.
+**Safely** serialize objects (and built-in Godot types) to **JSON or binary**. Enables registration of scripts/classes and conversion of values to/from JSON or bytes, without any risk of code execution. Perfect for save state systems or networking.
 
-Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects` which allow for code execution), but this library can!
+Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects`, which allows code execution), but this library can!
 
 **Features:**
 
 - **Safety**: No remote code execution, can be used for untrusted data (e.g. save state system or networking).
 - **Dictionary/binary mode**: Dictionary mode can be used for JSON serialization (`JSON.stringify`/`JSON.parse_string`), while binary mode can be used with binary serialization (`var_to_bytes`/`bytes_to_var`). Provides helpers to serialize directly to JSON/binary.
 - **Objects**: Objects can be serialized, including enums, inner classes, and nested values. Supports class constructors and custom serializer/deserializer.
-- **Built-in types**: All built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Quaternion, Color, Plane, Basis, AABB, Projection, Packed\*Array, etc) are supported.
-- **Efficient JSON bytes**: When serialiazing to JSON, `PackedByteArray`s are efficiently serialized as base64, reducing byte count by ~40%
+- **Built-in types**: Supports all built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Quaternion, Color, Plane, Basis, AABB, Projection, Packed\*Array, etc).
+- **Efficient JSON bytes**: When serializing to JSON, `PackedByteArray`s are efficiently serialized as base64, reducing the serialized byte count by ~40%
 
 > Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
 
@@ -18,12 +18,45 @@ Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`J
 
 Start by [installing the plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html).
 
-> Note: Will be added to Asset Library once stable.
+```gdscript
+class Data:
+	var name: String
+	var position: Vector2
+
+
+func _init() -> void:
+	# Required: Register possible object scripts
+	ObjectSerializer.register_script("Data", Data)
+
+	# Setup data
+	var data := Data.new()
+	data.name = "hello world"
+	data.position = Vector2(1, 2)
+
+	var json = DictionarySerializer.serialize_json(data)
+	""" Output:
+	{
+		"._type": "Object_Data",
+		"name": "hello world",
+		"position": {
+			"._type": "Vector2",
+			"._": [
+				1.0,
+				2.0
+			]
+		}
+	}
+	"""
+
+	data = DictionarySerializer.deserialize_json(json)
+```
+
+**Full example:**
 
 ```gdscript
-# Example data class. Can extends any type, include Resource
+# Example data class. Can extend any type, include Resource
 class Data:
-	# Supports all primitive types (String, int, float, bool, null), including @export-ed variables
+	# Supports all primitive types (String, int, float, bool, null), including @export variables
 	@export var string: String
 	# Supports all extended built-in types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Color, Packed*Array, etc)
 	var vector: Vector3
@@ -145,16 +178,16 @@ func _assert_data(deserialized: Data) -> void:
 
 ## Dictionary vs Binary Mode
 
-This library focuses on serializing objects and built-in types. Therfore, this library does not serialize to JSON/binary/etc on it's own.
+This library provides 2 modes to make values serializable: dictionary/JSON and binary/bytes mode.
 
-Instead, it provides 2 modes to turn make values serializable: dictionary and binary mode.
-
-Both modes handle primitives (String, bool, int, float, null) the same, as well as objects (serializes objects into dictionary with `._type` field).
+Both modes handle primitives (String, bool, int, float, null) the same, as well as objects (serializing into a dictionary containing a `._type` field).
 
 The difference between the 2 modes is how it handles extended built-in types (Vector2, Vector3, Transform3D, Color, etc):
 
-- In dictionary mode (which is targeted to be used with `JSON.stringify`), these are serialized as dictionaries with `._type` field and converted using `JSON.from_native`/`JSON.to_native`.
-- In binary mode (which is targeted to be used with `var_to_bytes`), these are left as-is, since `var_to_bytes` natively supports these types.
+- In dictionary mode (which is targeted to be used with `JSON.stringify`), these are serialized as dictionaries containing a `._type` field and converted using `JSON.from_native`/`JSON.to_native`.
+- In binary mode (which is targeted to be used with `var_to_bytes`), these are left as-is, as `var_to_bytes` natively supports these types.
+
+This allows you to choose your preferred output format while ensuring efficient serialization. This library also provides helper functions to serialize directly to JSON or bytes.
 
 ## Why Not Built-In Alternatives?
 
@@ -164,7 +197,7 @@ There's multiple ways to serialize data in Godot, with only some of them safe (s
 
 JSON serialization works great for data that can be represented as JSON (string, numbers, arrays, dictionary, booleans, null). This means that objects or other built-in types (e.g. Vector2) cannot be represented.
 
-To use `JSON.stringify`, the traditional way is to manually serialize to a JSON-representable data before serialization (see example).
+To use `JSON.stringify`, the traditional way is to manually convert data to a JSON-compatible format before serialization (see example).
 
 <details>
 <summary>Example</summary>
@@ -182,7 +215,7 @@ class JsonData:
 	static func from_dict(data: Dictionary) -> JsonData:
 		var result := JsonData.new()
 		result.string = data["string"]
-		result.vector2 = Vector2(data["vector2"][0], data["vector2"][0])
+		result.vector2 = Vector2(data["vector2"][0], data["vector2"][1])
 		return result
 
 func _init():
@@ -207,11 +240,11 @@ This is flexible but very tedious as every object type must be manually serializ
 
 ### `JSON.from_native`
 
-Godot has a built-in way to serialize more types such as Vector2, Vector3, Transform3D, etc, to a JSON represenation.
+Godot has a built-in way to serialize more types such as Vector2, Vector3, Transform3D, etc, to a JSON representation.
 
 By default, this does not support serializing objects, unless `full_objects` is true (second argument in `JSON.from_native(object, true)`). **This is unsafe** (can cause remote code execution) and `full_objects` should never be used with untrusted data.
 
-Additionally, using `JSON.from_native` combined with a `to_dict` produced inefficient packing (see example).
+Additionally, using `JSON.from_native` combined with a `to_dict` produces inefficient packing (see example).
 
 <details>
 <summary>Example</summary>
@@ -264,7 +297,7 @@ Godot has a built-in way to serialize more types such as Vector2, Vector3, Trans
 
 By default, this does not support serializing objects, unless `var_to_bytes_with_objects`/`bytes_to_var_with_objects` is used. **This is unsafe** (can cause remote code execution) and `*_with_objects` should never be used with untrusted data.
 
-Additionally, using `var_to_bytes` combined with a `to_dict` produced inefficient packing (similar to the `JSON.from_native` example above).
+Additionally, using `var_to_bytes` combined with a `to_dict` produces inefficient packing (similar to the `JSON.from_native` example above).
 
 ## Registering Scripts
 
@@ -275,14 +308,14 @@ ObjectSerializer.register_script("Data", Data)
 
 # Or, if you have multiple
 ObjectSerializer.register_scripts({
-	"Data"= Data,
-	"DataResource" = DataResource,
+	"Data": Data,
+	"DataResource": DataResource,
 })
 ```
 
 ## Object Serialization
 
-During serialization, all fields are serialized. This can be overriden by overriding [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized).
+During serialization, all fields are serialized. This can be overridden by implementing [`_get_property_list()`](https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-private-method-get-property-list) (only properties with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized).
 
 During deserialization, all fields are set back on the object.
 
@@ -307,7 +340,7 @@ Classes can implement `_serializer(serialize: Callable) -> Dictionary` and `stat
 
 Note that the type field (by default `._type`) will automatically be added after your custom serializer, and the field will be present in the deserializer's `data`. Having a custom serializer/deserializer skips constructor handling.
 
-To serialize/deserialize nested data, use the `serialize`/`deserialize` Callables provided to your method. This is only required for non-primitives.
+Use the provided `serialize`/`deserialize` Callables for nested data. This is necessary only for non-primitive types.
 
 ```gdscript
 class Data:
@@ -316,16 +349,16 @@ class Data:
 	# Must call `serialize`/`deserialize` for non-primitive
 	var position: Vector2
 
-	func _serialize(next: Callable) -> Dictionary:
+	func _serialize(serialize: Callable) -> Dictionary:
 		return {
 			"key": name,
-			"pos": next.call(position)
+			"pos": serialize.call(position)
 		}
 
-	static func _deserialize(data: Dictionary, next: Callable) -> Data:
+	static func _deserialize(data: Dictionary, deserialize: Callable) -> Data:
 		var instance = Data.new()
 		instance.name = data["key"]
-		instance.position = next.call(data["pos"])
+		instance.position = deserialize.call(data["pos"])
 		return instance
 ```
 
@@ -347,9 +380,9 @@ class Data:
 
 ## Glossary
 
-- "Objects" are are instances of [objects](https://docs.godotengine.org/en/stable/classes/class_object.html).
-- "Scripts" refers to [scripts](https://docs.godotengine.org/en/stable/classes/class_script.html), which can be GDScript or C#.
-- "Classes" refers to the classes inside of scripts. Every GDScript is a class, and can include inner class
+- "Objects" are instances of [objects](https://docs.godotengine.org/en/stable/classes/class_object.html).
+- "Scripts" refer to [scripts](https://docs.godotengine.org/en/stable/classes/class_script.html), which can be GDScript or C#.
+- "Classes" refer to the classes inside of scripts. Every GDScript is a class, and can include inner class
 
 ```gdscript
 # This file is the "Data" class. Extends Object by default
@@ -367,7 +400,7 @@ var data := Data.new()
 
 ### `ObjectSerializer.register_script(name: StringName, script: Script) -> void`
 
-Registers a script (a object type) to be serialized/deserialized. All custom types (included nested types) must be registered _before_ using this library.
+Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered _before_ using this library.
 
 Name can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 
@@ -411,37 +444,37 @@ Deserialize bytes `data` to value with `bytes_to_var` and `BinarySerializer.dese
 
 ### Settings
 
-It's not recommended to change these options, but they are available.
+It's not recommended to change these options, but they are available. Any changes to options must be done before serialization/deserialization.
 
 #### `ObjectSerializer.type_field: String` (default: `._type`)
 
 The field containing the type in serialized object values. Not recommended to change.
 This should be set to something unlikely to clash with keys in objects/dictionaries.
-Can be changed but must be done before any serialization/deserizalization.
+This can be changed, but must be configured before any serialization or deserialization.
 
 #### `ObjectSerializer.args_field: String` (default: `._`)
 
 The field containing the constructor arguments in serialized object values. Not recommended to change.
 This should be set to something unlikely to clash with keys in objects.
-Can be changed but must be done before any serialization/deserizalization.
+This can be changed, but must be configured before any serialization or deserialization.
 
 #### `ObjectSerializer.object_type_prefix: String` (default: `Object_`)
 
 The prefix for object types stored in `ObjectSerializer.type_field`. Not recommended to change.
 This should be set to something unlikely to clash with built-in type names.
-Can be changed but must be done before any serialization/deserizalization.
+This can be changed, but must be configured before any serialization or deserialization.
 
 #### `DictionarySerializer.bytes_as_base64: bool` (default: `true`)
 
 Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8)
 It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
-Can be changed but must be done before any serialization/deserizalization.
+This can be changed, but must be configured before any serialization or deserialization.
 
 #### `DictionarySerializer.bytes_to_base64_type: String` (default: `PackedByteArray_Base64`)
 
 The type of the object for PackedByteArray when `DictionarySerializer.bytes_as_base64` is enabled.
 This should be set to something unlikely to clash with built-in type names or `ObjectSerializer.object_type_prefix`.
-Can be changed but must be done before any serialization/deserizalization.
+This can be changed, but must be configured before any serialization or deserialization.
 
 ### Unsupported Types
 
@@ -453,7 +486,7 @@ Can be changed but must be done before any serialization/deserizalization.
 
 ### JSON integer to float conversion for Variants
 
-Godot's JSON serialization converts ints to floats when it's typed as `Variant`. This doesn't apply to typed fields or when using binary serialization.
+When using JSON serialization in Godot, integer values are converted to floats if they are typed as `Variant`. This doesn't apply to typed fields or when using binary serialization.
 
 ```gdscript
 class Data:
@@ -493,4 +526,4 @@ assert(data.dictionary_typed.value == 1)
 
 ## Development
 
-Test scripts inside the `tests` directory can be used for testing. Run with: `godot --headless --quit -s tests/quick_start.gd`
+You can run test scripts located in the `tests` directory for development. Example: `godot --headless --quit -s tests/dictionary.gd`
