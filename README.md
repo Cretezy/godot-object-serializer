@@ -1,6 +1,6 @@
 # <img src="https://github.com/user-attachments/assets/958be42d-1a09-42db-b543-045fbad17c4b" height="24px"> Godot Object Serializer
 
-**Safely** serialize objects (and built-in Godot types) to **JSON or binary**. Enables registration of scripts/classes and conversion of values to/from JSON or bytes, without any risk of code execution. Perfect for save state systems or networking.
+**Safely** serialize/deserialize objects (and built-in Godot types) to **JSON or binary** in Godot. Enables registration of scripts/classes and conversion of values to/from JSON or bytes, without any risk of code execution. Perfect for save state systems or networking.
 
 Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects`, which allows code execution), but this library can!
 
@@ -11,8 +11,6 @@ Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`J
 - **Objects**: Objects can be serialized, including enums, inner classes, and nested values. Supports class constructors and custom serializer/deserializer.
 - **Built-in types**: Supports all built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Quaternion, Color, Plane, Basis, AABB, Projection, Packed\*Array, etc).
 - **Efficient JSON bytes**: When serializing to JSON, `PackedByteArray`s are efficiently serialized as base64, reducing the serialized byte count by ~40%
-
-> Note: This library is not yet stable, the current API is unlikely to change but object serialization may change with more features.
 
 ## Quick Start
 
@@ -40,10 +38,7 @@ func _init() -> void:
 		"name": "hello world",
 		"position": {
 			"._type": "Vector2",
-			"._": [
-				1.0,
-				2.0
-			]
+			"._": [1.0, 2.0]
 		}
 	}
 	"""
@@ -111,24 +106,14 @@ func json_serialization() -> void:
 		"string": "Lorem ipsum",
 		"vector": {
 			"._type": "Vector3",
-			"._": [
-				1.0,
-				2.0,
-				3.0
-			]
+			"._": [1.0, 2.0, 3.0]
 		},
 		"enum_state": 1,
-		"array": [
-			1,
-			2
-		],
+		"array": [1, 2],
 		"dictionary": {
 			"position": {
 				"._type": "Vector2",
-				"._": [
-					1.0,
-					2.0
-				]
+				"._": [1.0, 2.0]
 			}
 		},
 		"packed_byte_array": {
@@ -226,10 +211,7 @@ func _init():
 	""" Output:
 	{
 		"string": "hello world",
-		"vector2": [
-			1.0,
-			2.0
-		]
+		"vector2": [1.0, 2.0]
 	}
 	"""
 ```
@@ -279,10 +261,7 @@ func _init():
 			"s:vector2",
 			{
 				"type": "Vector2",
-				"args": [
-					1.0,
-					2.0
-				],
+				"args": [1.0, 2.0],
 			}
 		]
 	}
