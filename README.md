@@ -286,7 +286,7 @@ Additionally, using `var_to_bytes` combined with a `to_dict` produces inefficien
 
 ## Registering Scripts
 
-Registering scripts is required for godot-object-serializer to know how to serialize and deserialize your objects. You can do so in 2 ways:
+Registering scripts is required for the library to know how to serialize and deserialize your objects. You can do so in 2 ways:
 
 ```gdscript
 ObjectSerializer.register_script("Data", Data)
@@ -297,6 +297,8 @@ ObjectSerializer.register_scripts({
 	"DataResource": DataResource,
 })
 ```
+
+Registration is required to have a stable mapping of class name to script. This enables changing the name of the class without breaking previously serialized data. Additionally, this serves as a security measure as only known classes will be deserialized.
 
 ## Object Serialization
 
