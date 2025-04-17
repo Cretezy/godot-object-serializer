@@ -4,6 +4,8 @@
 
 Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`JSON.from_native`/`JSON.to_native`) cannot safely serialize objects (without using `full_objects`/`var_to_bytes_with_objects`, which allows code execution), but this library can!
 
+**[View in Asset Library](https://godotengine.org/asset-library/asset/3940)**
+
 **Features:**
 
 - **Safety**: No remote code execution, can be used for untrusted data (e.g. save state system or networking).
@@ -14,7 +16,7 @@ Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`J
 
 ## Quick Start
 
-Start by [installing the plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html).
+Start by [installing the plugin](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html). You can install it from the [Asset Library](https://godotengine.org/asset-library/asset/3940) (search "Godot Object Serializer" in the "AssetLib" tab of the editor), or by manually placing the [`addons/godot_object_serializer`](./addons/godot_object_serializer/) directory in your project.
 
 ```gdscript
 class Data:
@@ -317,6 +319,8 @@ class Data:
 		return [name]
 ```
 
+> Properties in the constructor will also be included as fields in the serialized data. You can [exclude](#excluded-properties) these (see below) to avoid duplication.
+
 ### Excluded Properties
 
 You can exclude properties from serialization by implementing `_get_excluded_properties(): Array[String]`:
@@ -364,12 +368,12 @@ class Data:
 
 ```json
 {
-  "._type": "Object_Data",
-  "key": "hello world",
-  "pos": {
-    "._type": "Vector2",
-    "._": [1.0, 2.0]
-  }
+	"._type": "Object_Data",
+	"key": "hello world",
+	"pos": {
+		"._type": "Vector2",
+		"._": [1.0, 2.0]
+	}
 }
 ```
 
