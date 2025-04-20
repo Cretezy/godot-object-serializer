@@ -81,7 +81,7 @@ static func deserialize_var(value: Variant) -> Variant:
 					if !entry:
 						assert(false, "Could not find type (%s) in registry" % type)
 
-					return entry.deserialize(value, deserialize_var)
+					return entry.deserialize(value, deserialize_var, true)
 
 				return JSON.to_native({"type": type, "args": value[ObjectSerializer.args_field]})
 

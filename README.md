@@ -13,6 +13,7 @@ Godot's built-in serialization (such as `var_to_bytes`/`FileAccess.store_var`/`J
 - **Objects**: Objects can be serialized, including enums, inner classes, and nested values. Supports class constructors and custom serializer/deserializer.
 - **Built-in types**: Supports all built-in value types (Vector2/3/4/i, Rect2/i, Transform2D/3D, Quaternion, Color, Plane, Basis, AABB, Projection, Packed\*Array, etc).
 - **Efficient JSON bytes**: When serializing to JSON, `PackedByteArray`s are efficiently serialized as base64, reducing the serialized byte count by ~40%
+- **Non-string JSON dictionary keys**: Supports deserializing `int`/`float`/`bool` keys from JSON
 
 ## Quick Start
 
@@ -481,11 +482,28 @@ This can be changed, but must be configured before any serialization or deserial
 
 ### Unsupported Types
 
-- Classes/scripts that are not registered with `ObjectSerializer.register_script`
-- Callable
-- Signal
+- Callable/signal (will be empty)
+- When using JSON, dictionaries without primitive (`String`/`int`/`float`/`bool`) keys (see below)
+
+And classes/scripts that are not registered with `ObjectSerializer.register_script`.
 
 ## Edge Cases
+
+### JSON dictionary key type conversion
+
+Since JSON only supports strings as key, only `Dictionary[String, Variant]` can natively be parsed by `JSON.parse_string`. This library adds support for `int`/`float`/`bool` keys in dictionaries if typed. All types are supported as keys when using binary serialization.
+
+```gdscript
+class Data:
+	# Supported natively by JSON
+	var string_dict: Dictionary[String, Variant]
+	# Supported by library
+	var int_dict: Dictionary[int, Variant]
+	var float_dict: Dictionary[float, Variant]
+	var bool_dict: Dictionary[bool, Variant]
+	# Unsupported with JSON, works with binary
+	var vector_dict: Dictionary[Vector2, Variant]
+```
 
 ### JSON integer to float conversion for Variants
 

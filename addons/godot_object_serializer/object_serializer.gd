@@ -82,9 +82,9 @@ class _ScriptRegistryEntry:
 
 		var result := {ObjectSerializer.type_field: type}
 
-		var excluded_properties: Array[String] = (
-			value._get_excluded_properties() if value.has_method("_get_excluded_properties") else []
-		)
+		var excluded_properties: Array[String] = []
+		if value.has_method("_get_excluded_properties"):
+			excluded_properties = value._get_excluded_properties()
 
 		for property: Dictionary in value.get_property_list():
 			if (
@@ -99,7 +99,8 @@ class _ScriptRegistryEntry:
 
 		return result
 
-	func deserialize(value: Variant, next: Callable) -> Variant:
+	## When [param json_keys] is enabled, attempt to convert int/float/bool string keys into values
+	func deserialize(value: Variant, next: Callable, json_keys := false) -> Variant:
 		if script_type.has_method("_deserialize"):
 			return script_type._deserialize(value, next)
 
@@ -109,11 +110,9 @@ class _ScriptRegistryEntry:
 		else:
 			instance = script_type.new()
 
-		var excluded_properties: Array[String] = (
-			instance._get_excluded_properties()
-			if instance.has_method("_get_excluded_properties")
-			else []
-		)
+		var excluded_properties: Array[String] = []
+		if instance.has_method("_get_excluded_properties"):
+			excluded_properties = instance._get_excluded_properties()
 
 		for key: String in value:
 			if (
@@ -125,7 +124,32 @@ class _ScriptRegistryEntry:
 			var key_value: Variant = next.call(value[key])
 			match typeof(key_value):
 				TYPE_DICTIONARY:
-					instance[key].assign(key_value)
+					if json_keys and instance[key].is_typed_key():
+						match instance[key].get_typed_key_builtin():
+							TYPE_STRING:
+								instance[key].assign(key_value)
+							TYPE_BOOL:
+								var dict: Dictionary[bool, Variant] = {}
+								for i in key_value:
+									dict[i == "true"] = key_value[i]
+								instance[key].assign(dict)
+							TYPE_INT:
+								var dict: Dictionary[int, Variant] = {}
+								for i in key_value:
+									dict[int(i)] = key_value[i]
+								instance[key].assign(dict)
+							TYPE_FLOAT:
+								var dict: Dictionary[float, Variant] = {}
+								for i in key_value:
+									dict[float(i)] = key_value[i]
+								instance[key].assign(dict)
+							_:
+								assert(
+									false,
+									"Trying to deserialize from JSON to a dictionary with non-primitive (String/int/float/bool) keys"
+								)
+					else:
+						instance[key].assign(key_value)
 				TYPE_ARRAY:
 					instance[key].assign(key_value)
 				_:
