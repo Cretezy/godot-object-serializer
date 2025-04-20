@@ -1,4 +1,5 @@
 ## Main godot-object-serializer class. Stores the script registry.
+## [url]https://github.com/Cretezy/godot-object-serializer[/url]
 class_name ObjectSerializer
 
 ## The field containing the type in serialized object values. Not recommended to change.
@@ -15,19 +16,24 @@ static var type_field := "._type"
 ## This can be changed, but must be configured before any serialization or deserialization.
 static var args_field := "._"
 
-## The prefix for object types stored in [type_field]. Not recommended to change.
+## The prefix for object types stored in [member type_field]. Not recommended to change.
 ##
 ## This should be set to something unlikely to clash with built-in type names.
 ##
 ## This can be changed, but must be configured before any serialization or deserialization.
 static var object_type_prefix := "Object_"
 
+## By default, variables with [@GlobalScope.PROPERTY_USAGE_SCRIPT_VARIABLE] are serialized (all variables have this by default).
+## When [member require_export_storage] is true, variables will also require [@GlobalScope.PROPERTY_USAGE_STORAGE] to be serialized.
+## This can be set on variables using [annotation @GDScript.@export_storage]. Example: [code]@export_storage var name: String[/code]
+static var require_export_storage := false
+
 ## Registry of object types
 static var _script_registry: Dictionary[String, _ScriptRegistryEntry]
 
 
-## Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered _before_ using this library.
-## [param name] can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
+## Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered [b]before[/b] using this library.
+## [param name] can be empty if script uses [code]class_name[/code] (e.g [code]ObjectSerializer.register_script("", Data)[/code]), but it's generally better to set the name.
 static func register_script(name: StringName, script: Script) -> void:
 	var script_name := _get_script_name(script, name)
 	assert(script_name, "Script must have name\n" + script.source_code)
@@ -89,6 +95,10 @@ class _ScriptRegistryEntry:
 		for property: Dictionary in value.get_property_list():
 			if (
 				property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE
+				and (
+					!ObjectSerializer.require_export_storage
+					or property.usage & PROPERTY_USAGE_STORAGE
+				)
 				and !excluded_properties.has(property.name)
 			):
 				result[property.name] = next.call(value.get(property.name))

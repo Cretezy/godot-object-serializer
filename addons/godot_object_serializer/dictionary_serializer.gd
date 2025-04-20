@@ -7,12 +7,12 @@ const _JSON_SERIALIZABLE_TYPES = [
 	TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME
 ]
 
-## Controls if PackedByteArray should be serialized as base64 (instead of array of bytes as uint8).
+## Controls if [PackedByteArray] should be serialized as base64 (instead of array of bytes as uint8).
 ## It's highly recommended to leave this enabled as it will result to smaller serialized payloads and should be faster.
 ## This can be changed, but must be configured before any serialization or deserialization.
 static var bytes_as_base64 := true
-## The type of the object for PackedByteArray when [bytes_as_base64] is enabled.
-## This should be set to something unlikely to clash with built-in type names or [ObjectSerializer.object_type_prefix].
+## The type of the object for [PackedByteArray] when [member bytes_as_base64] is enabled.
+## This should be set to something unlikely to clash with built-in type names or [member ObjectSerializer.object_type_prefix].
 ## This can be changed, but must be configured before any serialization or deserialization.
 static var bytes_to_base64_type := "PackedByteArray_Base64"
 

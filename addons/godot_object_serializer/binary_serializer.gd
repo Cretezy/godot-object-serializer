@@ -1,9 +1,9 @@
-## Serializer to be used with Godot's built-in binary serialization ([method var_to_bytes] and [method bytes_to_var]).
+## Serializer to be used with Godot's built-in binary serialization ([method @GlobalScope.var_to_bytes] and [method @GlobalScope.bytes_to_var]).
 ## This serializes objects but leaves built-in Godot types as-is.
 class_name BinarySerializer
 
 
-## Serialize [param data] to value which can be passed to [method var_to_bytes].
+## Serialize [param data] to value which can be passed to [method @GlobalScope.var_to_bytes].
 static func serialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_OBJECT:
@@ -30,12 +30,12 @@ static func serialize_var(value: Variant) -> Variant:
 	return value
 
 
-## Serialize [param data] into bytes with [method BinaryObjectSerializer.serialize_var] and [method var_to_bytes].
+## Serialize [param data] into bytes with [method BinaryObjectSerializer.serialize_var] and [method @GlobalScope.var_to_bytes].
 static func serialize_bytes(value: Variant) -> PackedByteArray:
 	return var_to_bytes(serialize_var(value))
 
 
-## Deserialize [param data] from [method bytes_to_var] to value.
+## Deserialize [param data] from [method @GlobalScope.bytes_to_var] to value.
 static func deserialize_var(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_DICTIONARY:
@@ -58,6 +58,6 @@ static func deserialize_var(value: Variant) -> Variant:
 	return value
 
 
-## Deserialize bytes [param data] to value with [method bytes_to_var] and [method BinaryObjectSerializer.deserialize_var].
+## Deserialize bytes [param data] to value with [method @GlobalScope.bytes_to_var] and [method BinaryObjectSerializer.deserialize_var].
 static func deserialize_bytes(value: PackedByteArray) -> Variant:
 	return deserialize_var(bytes_to_var(value))

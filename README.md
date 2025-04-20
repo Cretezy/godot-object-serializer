@@ -404,7 +404,7 @@ var data := Data.new()
 
 ### `ObjectSerializer.register_script(name: StringName, script: Script) -> void`
 
-Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered _before_ using this library.
+Registers a script (an object type) to be serialized/deserialized. All custom types (including nested types) must be registered **before** using this library.
 
 Name can be empty if script uses `class_name` (e.g `ObjectSerializer.register_script("", Data)`), but it's generally better to set the name.
 
@@ -449,6 +449,12 @@ Deserialize bytes `data` to value with `bytes_to_var` and `BinarySerializer.dese
 ### Settings
 
 It's not recommended to change these options, but they are available. Any changes to options must be done before serialization/deserialization.
+
+#### `ObjectSerializer.require_export_storage: bool` (default: `false`)
+
+By default, variables with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized (all variables have this by default).
+When `require_export_storage` is true, variables will also require `PROPERTY_USAGE_STORAGE` to be serialized.
+This can be set on variables using `@export_storage`. Example: `@export_storage var name: String`
 
 #### `ObjectSerializer.type_field: String` (default: `._type`)
 
