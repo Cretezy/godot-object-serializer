@@ -348,6 +348,8 @@ Classes can implement `_serializer(serialize: Callable) -> Dictionary` and `stat
 
 Note that the type field (by default `._type`) will automatically be added after your custom serializer, and the field will be present in the deserializer's `data`. Having a custom serializer/deserializer skips constructor handling.
 
+When `_serialize`/`_deserialize` are implemented, other functions such as `_get_excluded_properties`, `_get_constructor_args`, and `_serialize_partial`/`_deserialize_partial` are not ran.
+
 Use the provided `serialize`/`deserialize` Callables for nested data. This is necessary only for non-primitive types.
 
 ```gdscript
