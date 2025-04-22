@@ -324,6 +324,8 @@ class Data:
 
 > Properties in the constructor will also be included as fields in the serialized data. You can [exclude](#excluded-properties) these (see below) to avoid duplication.
 
+[View full example](./tests/constructor.gd)
+
 ### Excluded Properties
 
 You can exclude properties from serialization by implementing `_get_excluded_properties(): Array[String]`:
@@ -337,6 +339,8 @@ class Data:
 		# name won't be serialized/deserialized, but position will
 		return ["name"]
 ```
+
+[View full example](./tests/excluded_properties.gd)
 
 ### Custom Object Serializer
 
@@ -380,7 +384,79 @@ class Data:
 }
 ```
 
+[View full example](./tests/custom.gd)
+
 </details>
+
+### Partial Custom Object Serializer
+
+In some cases, only some fields of the class requires custom a serializer, while the rest of the fields can use the normal serialization logic. This is the case when trying to serialize one of the built-in non-value types (such as `Texture`, `BitMap`, etc).
+
+In those cases, classes can implement `_serializer_partial(serialize: Callable) -> Dictionary` and `_deserialize_partial(data: Dictionary, deserialize: Callable) -> Dictionary` to customize the serialization. The fields returned by this will be added to the serialized/deserialized result, and will be excluded normal serialization (all other fields will be included).
+
+It's generally recommended to prefer `_serialize_partial`/`_deserialize_partial` over `_serialize`/`_deserialize` if you only need some fields have custom serialization logic.
+
+Use the provided `serialize`/`deserialize` Callables for nested data. This is necessary only for non-primitive types (same as `_serialize`/`_deserialize`).
+
+```gdscript
+class Data:
+	# Will be serialized normally
+	var name: String
+	# BitMap is not a built-in value type, needs to be handled with custom serializer
+	var bitmap: BitMap
+
+	func _serialize_partial(serialize: Callable) -> Dictionary:
+		return {"bitmap": _serialize_bitmap(bitmap, serialize)}
+
+	func _deserialize_partial(data: Dictionary, deserialize: Callable) -> Dictionary:
+		return {"bitmap": _deserialize_bitmap(data["bitmap"], deserialize)}
+```
+
+<details>
+<summary>Example BitMap serialization functions</summary>
+
+```gdscript
+func _serialize_bitmap(bitmap: BitMap, _serialize: Callable) -> Array[Array]:
+	var size := bitmap.get_size()
+	var rows: Array[Array] = []
+	for x in range(size.x):
+		var column = []
+		for y in range(size.y):
+			column.append(bitmap.get_bit(x, y))
+
+		rows.append(column)
+
+	return rows
+
+func _deserialize_bitmap(data: Variant, _serialize: Callable) -> BitMap:
+	var bitmap := BitMap.new()
+	bitmap.create(Vector2i(data.size(), data[0].size()))
+	for row in range(data.size()):
+		for column in range(data[row].size()):
+			bitmap.set_bit(row, column, data[row][column])
+
+	return bitmap
+```
+
+</details>
+
+<details>
+<summary>Example output</summary>
+
+```json
+{
+	"._type": "Object_Data",
+	"bitmap": [
+		[true, false, true],
+		[true, false, false]
+	],
+	"name": "hello world"
+}
+```
+
+</details>
+
+[View full example](./tests/custom_partial.gd)
 
 ## Glossary
 
@@ -455,6 +531,8 @@ It's not recommended to change these options, but they are available. Any change
 By default, variables with `PROPERTY_USAGE_SCRIPT_VARIABLE` are serialized (all variables have this by default).
 When `require_export_storage` is true, variables will also require `PROPERTY_USAGE_STORAGE` to be serialized.
 This can be set on variables using `@export_storage`. Example: `@export_storage var name: String`
+
+[View full example](./tests/export_storage.gd)
 
 #### `ObjectSerializer.type_field: String` (default: `._type`)
 

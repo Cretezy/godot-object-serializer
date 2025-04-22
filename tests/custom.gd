@@ -1,5 +1,7 @@
 extends SceneTree
 
+# Example of custom serializers
+
 
 class Data:
 	# No need to call `serialize`/`deserialize` for primitive
@@ -7,13 +9,13 @@ class Data:
 	# Must call `serialize`/`deserialize` for non-primitive
 	var position: Vector2
 
-	func _serialize(next: Callable) -> Dictionary:
-		return {"key": name, "pos": next.call(position)}
+	func _serialize(serialize: Callable) -> Dictionary:
+		return {"key": name, "pos": serialize.call(position)}
 
-	static func _deserialize(data: Dictionary, next: Callable) -> Data:
+	static func _deserialize(data: Dictionary, deserialize: Callable) -> Data:
 		var instance = Data.new()
 		instance.name = data["key"]
-		instance.position = next.call(data["pos"])
+		instance.position = deserialize.call(data["pos"])
 		return instance
 
 

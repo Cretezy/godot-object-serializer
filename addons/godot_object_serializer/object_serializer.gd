@@ -92,6 +92,10 @@ class _ScriptRegistryEntry:
 		if value.has_method("_get_excluded_properties"):
 			excluded_properties = value._get_excluded_properties()
 
+		var partial: Dictionary = {}
+		if value.has_method("_serialize_partial"):
+			partial = value._serialize_partial(next)
+
 		for property: Dictionary in value.get_property_list():
 			if (
 				property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE
@@ -100,8 +104,12 @@ class _ScriptRegistryEntry:
 					or property.usage & PROPERTY_USAGE_STORAGE
 				)
 				and !excluded_properties.has(property.name)
+				and !partial.has(property.name)
 			):
 				result[property.name] = next.call(value.get(property.name))
+
+		for key in partial:
+			result[key] = partial[key]
 
 		if value.has_method("_get_constructor_args"):
 			var args: Array = value._get_constructor_args()
@@ -124,13 +132,19 @@ class _ScriptRegistryEntry:
 		if instance.has_method("_get_excluded_properties"):
 			excluded_properties = instance._get_excluded_properties()
 
+		var partial: Dictionary = {}
+		if instance.has_method("_deserialize_partial"):
+			partial = instance._deserialize_partial(value, next)
+
 		for key: String in value:
 			if (
 				key == ObjectSerializer.type_field
 				or key == ObjectSerializer.args_field
 				or excluded_properties.has(key)
+				or partial.has(key)
 			):
 				continue
+
 			var key_value: Variant = next.call(value[key])
 			match typeof(key_value):
 				TYPE_DICTIONARY:
@@ -164,5 +178,8 @@ class _ScriptRegistryEntry:
 					instance[key].assign(key_value)
 				_:
 					instance[key] = key_value
+
+		for key in partial:
+			instance[key] = partial[key]
 
 		return instance
