@@ -631,6 +631,12 @@ assert(data.array_typed == [1])
 assert(data.dictionary_typed.value == 1)
 ```
 
-## Development
+## Development/Contributions
 
-You can run test scripts located in the `tests` directory for development. Example: `godot --headless --quit -s tests/dictionary.gd`
+You can run test scripts located in the `tests` directory for development. Example: `godot --headless --quit --script tests/dictionary.gd`
+
+Contributions are welcomed to this project! Please format your changes with [gdformat](https://github.com/Scony/godot-gdscript-toolkit) before opening a PR if possible. Make sure to document your changes and write a test script.
+
+## License/Support
+
+This project is released under the [MIT license](./LICENSE). You can support my work through my [GitHub sponsorship page](https://github.com/sponsors/Cretezy). Thank you :)
